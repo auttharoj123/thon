@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "843584677277",
+    "project_id": "sl-pod-app",
+    "storage_bucket": "sl-pod-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:843584677277:android:3cfc5cdee910f130da3b74",
+        "android_client_info": {
+          "package_name": "com.sailom.slpod"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "843584677277-vfl7ltsav4gg697vi09a2306m6ah73c9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIzM4b5tnCNgAuU7D3luZJkFSf0FjBruw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "843584677277-vfl7ltsav4gg697vi09a2306m6ah73c9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "843584677277-gbfebmqp04jaj56ephrkgs1je76cnfsn.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.UIKit"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
