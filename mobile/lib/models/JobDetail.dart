@@ -15,6 +15,8 @@ class _JobDetail {
   late int ordDetailId;
   @JsonKey(name: "routeline_id")
   late int routelineId;
+  @JsonKey(name: "routename")
+  late String routeName;
   @JsonKey(name: "next_routeline_id")
   late int nextRoutelineId;
   @JsonKey(name: "order_status")
@@ -80,17 +82,17 @@ class _JobDetail {
   @JsonKey(name: "created_user_from_server")
   late String createdUserFromServer;
   @JsonKey(name: "updated_user_from_server")
-  late String updatedUserFromServer;
+  late String? updatedUserFromServer;
   @JsonKey(name: "updated_date_from_server")
   late String updatedDateFromServer;
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false)
   late bool isUpdatedFailed = false;
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false)
   late DateTime? latestUpdateTime;
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false)
   @Ignored()
   late bool isChecked = false;
 
@@ -122,46 +124,46 @@ class _JobDetail {
 extension JobDetailJ on JobDetail {
   static JobDetail toRealmObject(_JobDetail jobDetail) {
     return JobDetail(
-        jobDetail.id,
-        jobDetail.ordDetailId,
-        jobDetail.routelineId,
-        jobDetail.nextRoutelineId,
-        jobDetail.orderStatus,
-        jobDetail.directionType,
-        jobDetail.barcode,
-        jobDetail.jobNumber,
-        jobDetail.customerId,
-        jobDetail.customerName,
-        jobDetail.deliveryDate,
-        jobDetail.deliveryDocumentDate,
-        jobDetail.receiveDate,
-        jobDetail.createdDateFromServer,
-        jobDetail.goodsNumber,
-        jobDetail.goodsType,
-        jobDetail.goodsDetails,
-        jobDetail.receiverName,
-        jobDetail.receiverAddress,
-        jobDetail.receiverFullAddress,
-        jobDetail.contactName,
-        jobDetail.contactTelephone,
-        jobDetail.qty,
-        jobDetail.reference1,
-        jobDetail.reference2,
-        jobDetail.reference3,
-        jobDetail.remark,
-        jobDetail.statusFromServer,
-        jobDetail.createdUserFromServer,
-        jobDetail.updatedUserFromServer,
-        jobDetail.updatedDateFromServer,
-        contactEmail: jobDetail.contactEmail,
-        weight: jobDetail.weight,
-        width: jobDetail.width,
-        high: jobDetail.high,
-        length: jobDetail.length,
-        imgPath: jobDetail.imgPath
-        //jobDetail.isUpdatedFailed,
-        //jobDetail.latestUpdateTime
-        );
+      jobDetail.remark,
+      jobDetail.ordDetailId,
+      jobDetail.routelineId,
+      jobDetail.routeName,
+      jobDetail.nextRoutelineId,
+      jobDetail.orderStatus,
+      jobDetail.directionType,
+      jobDetail.barcode,
+      jobDetail.jobNumber,
+      jobDetail.customerId,
+      jobDetail.customerName,
+      jobDetail.statusFromServer,
+      jobDetail.id,
+      jobDetail.createdDateFromServer,
+      jobDetail.goodsNumber,
+      jobDetail.goodsType,
+      jobDetail.goodsDetails,
+      jobDetail.receiverName,
+      jobDetail.receiverAddress,
+      jobDetail.receiverFullAddress,
+      jobDetail.contactTelephone,
+      jobDetail.createdUserFromServer,
+      jobDetail.updatedDateFromServer,
+      jobDetail.reference1,
+      jobDetail.reference2,
+      jobDetail.reference3,
+      jobDetail.contactName,
+      jobDetail.deliveryDate,
+      jobDetail.deliveryDocumentDate,
+      jobDetail.qty,
+      jobDetail.receiveDate,
+      isUpdatedFailed: jobDetail.isUpdatedFailed,
+      imgPath: jobDetail.imgPath,
+      width: jobDetail.width,
+      high: jobDetail.high,
+      length: jobDetail.length,
+      updatedUserFromServer: jobDetail.updatedUserFromServer,
+      contactEmail: jobDetail.contactEmail,
+      weight: jobDetail.weight,
+    );
   }
 
   static JobDetail fromJson(Map<String, dynamic> json) =>

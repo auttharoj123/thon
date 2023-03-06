@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
 
@@ -5,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:slpod/api/API.dart';
 import 'package:slpod/api/RequestInterceptor.dart';
+import 'package:slpod/apps/fitness/controllers/home_controller.dart';
 import 'package:slpod/constants/SLConsts.dart';
 import 'package:slpod/models/MstType.dart';
 import 'package:slpod/models/ResultResponse.dart';
@@ -54,10 +56,13 @@ class AppController extends FxController {
   late List<RouteLine> routelines = [];
   late List<MstType> mstTypes = [];
   late RouteLine selectedRouteLine;
-  late DateTime fromDate = DateTime.now().subtract(Duration(days: 15));
+  late DateTime fromDate = DateTime.now().subtract(Duration(days: 20));
   late DateTime toDate = DateTime.now().add(Duration(days: 15));
   late API api;
 
+  // ignore: close_sinks
+  final sendJobEventStreamController = StreamController();
+  
   @override
   void initState() {
     super.initState();
@@ -90,11 +95,11 @@ class AppController extends FxController {
     update();
   }
 
-  Future onSelectedRouteLine(RouteLine item) async {
-    selectedRouteLine = item;
-    var prefs = await SharedPreferences.getInstance();
-    await prefs.setInt("routelineId", item.routelineId);
-  }
+  // Future onSelectedRouteLine(RouteLine item) async {
+  //   selectedRouteLine = item;
+  //   var prefs = await SharedPreferences.getInstance();
+  //   await prefs.setInt("routelineId", item.routelineId);
+  // }
 
   Future<void> onSelectedDateRange(DateTime? fromDate, DateTime? toDate) async {
     var prefs = await SharedPreferences.getInstance();
@@ -102,12 +107,14 @@ class AppController extends FxController {
     toDate = toDate;
     await prefs.setString("fromDate", fromDate.toString());
     await prefs.setString("toDate", toDate.toString());
+    update();
   }
 
   Future logout() async {
     await clearData();
+    //FxControllerStore.delete(HomeController());
     Navigator.pushReplacementNamed(
-        NavigationService.navigatorKey.currentContext!, '/');
+        NavigationService.navigatorKey.currentContext!, '/login');
   }
 
   Future clearData() async {

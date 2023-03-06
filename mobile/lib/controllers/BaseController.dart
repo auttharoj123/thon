@@ -29,6 +29,12 @@ class BaseController extends FxController {
 
     appController = FxControllerStore.putOrFind(AppController());
   }
+
+  @override
+  void dispose() {
+    
+    super.dispose();
+  }
   
   @override
   String getTag() {

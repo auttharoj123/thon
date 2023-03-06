@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutx/flutx.dart';
 
@@ -41,40 +43,58 @@ class CustomBottomNavigation extends StatelessWidget {
         ? Theme.of(context).bottomAppBarColor
         : backgroundColor;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: bgColor,
-        boxShadow: [
-          if (showElevation)
-            BoxShadow(
-              color: Colors.black.withAlpha(16),
-              blurRadius: 8,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(containerHeight / 2),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 2,sigmaY: 2),
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.blue.withAlpha(255),
+                  Colors.blue.shade300.withAlpha(200)
+                ]
+              ),
+              boxShadow: [
+                if (showElevation)
+                  BoxShadow(
+                    color: Colors.black.withAlpha(16),
+                    blurRadius: 8,
+                  ),
+              ],
             ),
-        ],
-      ),
-      child: SafeArea(
-        child: Container(
-          width: double.infinity,
-          height: containerHeight,
-          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-          child: Row(
-            mainAxisAlignment: mainAxisAlignment,
-            children: items.map((item) {
-              var index = items.indexOf(item);
-              return GestureDetector(
-                onTap: () => onItemSelected(index),
-                child: _ItemWidget(
-                  item: item,
-                  iconSize: iconSize,
-                  isSelected: index == selectedIndex,
-                  backgroundColor: bgColor!,
-                  itemCornerRadius: itemCornerRadius,
-                  animationDuration: animationDuration,
-                  curve: curve,
-                  selectedOverlayColor: selectedItemOverlayColor!,
+            child: Container(
+              width: double.infinity,
+              height: containerHeight,
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+              child: Container(
+                child: Row(
+                  mainAxisAlignment: mainAxisAlignment,
+                  children: items.map((item) {
+                    var index = items.indexOf(item);
+                    return GestureDetector(
+                      onTap: () => onItemSelected(index),
+                      child: _ItemWidget(
+                        item: item,
+                        iconSize: iconSize,
+                        isSelected: index == selectedIndex,
+                        backgroundColor: bgColor!,
+                        itemCornerRadius: itemCornerRadius,
+                        animationDuration: animationDuration,
+                        curve: curve,
+                        selectedOverlayColor: selectedItemOverlayColor!,
+                      ),
+                    );
+                  }).toList(),
                 ),
-              );
-            }).toList(),
+              ),
+            ),
           ),
         ),
       ),
@@ -147,8 +167,8 @@ class _ItemWidget extends StatelessWidget {
                   ),
                   if (isSelected)
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: FxText.titleMedium(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: FxText.titleSmall(
                         item.title,
                         color: item.activeColor,
                         fontWeight: 700,

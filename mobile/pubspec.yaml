@@ -20,7 +20,7 @@ version: 6.1.0
 versionCode: 4
 
 environment:
-  sdk: '>=2.15.0 <3.3.4'
+  sdk: '>=2.19.0-0 <4.0.0'
 
 dependencies:
   flutter:
@@ -35,7 +35,7 @@ dependencies:
   cupertino_icons: ^1.0.3
   provider: ^6.0.2
   shared_preferences: ^2.0.5
-  google_fonts: ^3.0.1
+  google_fonts: ^4.0.3
 
 
   # Icons
@@ -55,7 +55,7 @@ dependencies:
   shimmer: ^2.0.0
   url_launcher: ^6.0.3
   intl: ^0.17.0
-  rive: ^0.9.1
+  rive: ^0.10.2
   flare_flutter: ^3.0.2
   flutter_intro: ^3.0.2
   flutter_keyboard_visibility: ^5.4.0
@@ -64,7 +64,7 @@ dependencies:
   http: ^0.13.5
   font_awesome_flutter: ^10.2.1
   json_annotation: ^4.7.0
-  realm: ^0.5.0+beta
+  realm: ^1.0.1
   json_serializable: ^6.5.4
   date_format: ^2.0.7
   workmanager: ^0.5.0
@@ -79,10 +79,19 @@ dependencies:
   flutter_randomcolor: ^1.0.14
   sticky_headers: ^0.3.0+2
   grouped_list: ^5.1.2
-  flutter_typeahead: 4.1.1
-  flutter_signature_pad: 3.0.1
+  signature: ^5.3.2
+  flutter_foreground_task: ^4.1.0
   timeline_tile: 2.0.0
-  camera: ^0.10.3
+  camera:   
+    git:
+      url: https://github.com/flutter/plugins
+      path: packages/camera/camera
+      ref: 9e46048ad2e1f085c1e8f6c77391fa52025e681f
+  mobile_scanner: ^3.0.0
+  equatable: ^2.0.5
+  connectivity_plus: ^3.0.3
+  geolocator: ^9.0.2
+  lottie: ^2.2.0
 
 flutter_native_splash:
   # This package generates native code to customize Flutter's default white native splash screen
@@ -356,6 +365,9 @@ flutter:
 
     #Rive Animations
     - assets/animations/rive/
+
+    #Lottie Animations
+    - assets/animations/lottie/
 
     #Other
     - assets/other/

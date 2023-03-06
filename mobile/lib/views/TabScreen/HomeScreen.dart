@@ -1,6 +1,10 @@
+import 'dart:ui';
+
 import 'package:date_format/date_format.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:grouped_list/grouped_list.dart';
+import 'package:lottie/lottie.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:slpod/components/RadioCheckButton.dart';
 import 'package:slpod/components/expansion_tile_partial.dart';
 import 'package:slpod/constants/SLConsts.dart';
 import 'package:slpod/models/JobDetail.dart';
@@ -10,21 +14,45 @@ import 'package:flutter/services.dart';
 import 'package:flutx/flutx.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:slpod/utils/navigation_helper.dart';
+import 'package:slpod/views/Reuseable/GlobalWidget.dart';
 import 'package:slpod/views/SLState.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:slpod/views/SplashScreenPage.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
-import "package:slpod/extensions/jobdetail_extension.dart";
-
 import 'package:timezone/data/latest.dart' as tz;
-// import 'single_doctor_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 import '../../controllers/HomeController.dart';
 import '../../loading_effect.dart';
 
-// import 'models/category.dart';
-// import 'models/doctor.dart';
+class ScannerOverlay extends CustomPainter {
+  ScannerOverlay(this.scanWindow);
+
+  final Rect scanWindow;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final backgroundPath = Path()..addRect(Rect.largest);
+    final cutoutPath = Path()..addRect(scanWindow);
+
+    final backgroundPaint = Paint()
+      ..color = Colors.black.withOpacity(0.5)
+      ..style = PaintingStyle.fill
+      ..blendMode = BlendMode.dstOut;
+
+    final backgroundWithCutout = Path.combine(
+      PathOperation.difference,
+      backgroundPath,
+      cutoutPath,
+    );
+    canvas.drawPath(backgroundWithCutout, backgroundPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
+}
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -39,364 +67,1066 @@ class _HomeScreenState extends SLState<HomeScreen>
   late HomeController controller;
   late ScrollController _scrollController;
   late TextEditingController _searchTextController;
-  late TextEditingController _customerSearchController;
-  late SuggestionsBoxController _suggestBoxController;
   late DateRangePickerController _dateRangePickerController;
-  late AnimationController _appBarAnimationController;
-  late Animation<double> _appBarAnimation;
-  // dynamic color;
+  late MobileScannerController _mobileScannerController;
+  late GlobalWidget _globalWidget;
+  double topPointCard = 60;
+  bool isPanning = false;
 
   @override
   void initState() {
     super.initState();
-    _setupAnimateAppbar();
     tz.initializeTimeZones();
     theme = AppTheme.theme;
     customTheme = AppTheme.customTheme;
-    controller = FxControllerStore.putOrFind(HomeController());
+    controller = FxControllerStore.putOrFind(HomeController(), save: false);
     _dateRangePickerController = DateRangePickerController();
     _searchTextController = TextEditingController();
-    _customerSearchController = TextEditingController();
-    _suggestBoxController = SuggestionsBoxController();
+    _mobileScannerController =
+        MobileScannerController(detectionSpeed: DetectionSpeed.unrestricted);
     _scrollController = ScrollController();
+    _globalWidget = GlobalWidget();
   }
 
-  void _setupAnimateAppbar() {
-    // use this function and paramater to animate top bar
-    _appBarAnimationController =
-        AnimationController(vsync: this, duration: Duration(milliseconds: 0));
-    _appBarAnimation = Tween<double>(
-      begin: 0.0,
-      end: 130.0,
-    ).animate(_appBarAnimationController);
+  @override
+  void dispose() {
+    super.dispose();
   }
 
-  // Widget _buildSingleCategory(
-  //     {int? index,
-  //     String? categoryName,
-  //     IconData? categoryIcon,
-  //     Color? color}) {
-  //   return Padding(
-  //     padding: FxSpacing.right(16),
-  //     child: FxContainer(
-  //       paddingAll: 8,
-  //       borderRadiusAll: 8,
-  //       bordered: true,
-  //       border: Border.all(color: customTheme.border, width: 1),
-  //       color: selectedCategory == index
-  //           ? customTheme.card
-  //           : theme.scaffoldBackgroundColor,
-  //       onTap: () {
-  //         setState(() {
-  //           selectedCategory = index!;
-  //         });
-  //       },
-  //       child: Row(
-  //         children: [
-  //           FxContainer.rounded(
-  //             child: FaIcon(
-  //               categoryIcon,
-  //               color: Colors.white, //customTheme.medicarePrimary,
-  //               size: 18,
-  //             ),
-  //             color: color, //theme.colorScheme.onBackground.withAlpha(16),
-  //             paddingAll: 10,
-  //           ),
-  //           FxSpacing.width(8),
-  //           FxText.labelMedium(
-  //             categoryName!,
-  //             fontWeight: 600,
-  //           ),
-  //           FxSpacing.width(8),
-  //           FxText.labelMedium(
-  //             "(200)",
-  //             fontWeight: 600,
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
+  Widget _buildViewButton(dynamic job) {
+    if (controller.selectedJobs.length > 0) return Container();
 
-  // List<Widget> _buildCategoryList() {
-  //   List<Widget> list = [];
+    return FxContainer.roundBordered(
+      color: Colors.blue,
+      onTap: () {
+        controller.goToJobDetailPage(job);
+      },
+      paddingAll: 10,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            FontAwesomeIcons.eye,
+            color: Colors.white,
+            size: 16,
+          ),
+          // FxSpacing.width(10),
+        ],
+      ),
+    );
+  }
 
-  //   list.add(FxSpacing.width(24));
-
-  //   for (int i = 0; i < controller.categoryList.length; i++) {
-  //     list.add(_buildSingleCategory(
-  //         index: i,
-  //         categoryName: controller.categoryList[i].category,
-  //         categoryIcon: controller.categoryList[i].categoryIcon,
-  //         color: controller.categoryList[i].color));
-  //   }
-  //   return list;
-  // }
-
-  // List<Widget> _buildJobList() {
-  //   List<Widget> list = [];
-
-  //   list.add(FxSpacing.width(16));
-
-  //   for (int i = 0; i < controller.jobs.length; i++) {
-  //     list.add(_buildJobListItem(controller.jobs[i]));
-  //     list.add(FxSpacing.height(10));
-  //   }
-  //   return list;
-  // }
-
-  Widget _buildJobDetailWrapperItem(JobDetail job) {
-    var titleFontSize = 18.0;
-    // if (isGroupType) {
-    //   return FxContainer.transparent(
-    //     padding: FxSpacing.only(left: 10, right: 10),
-    //     onTap: () {
-    //       _searchTextController.text = job.barcode;
-    //       _appBarAnimationController.animateTo(0,
-    //           duration: Duration(milliseconds: 300), curve: Curves.ease);
-    //       _scrollController.animateTo(0,
-    //           duration: Duration(milliseconds: 300), curve: Curves.ease);
-    //       controller.searchJobs(job.barcode);
-    //     },
-    //     bordered: false,
-    //     borderRadiusAll: 0,
-    //     child: FxContainer.bordered(
-    //       borderRadiusAll: 20,
-    //       color: Colors.white,
-    //       child: Row(
-    //         children: [
-    //           Expanded(
-    //             child: Column(
-    //               crossAxisAlignment: CrossAxisAlignment.start,
-    //               children: [
-    //                 Row(
-    //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    //                   children: [
-    //                     Row(
-    //                       children: [
-    //                         FxContainer(
-    //                           color: Colors.blue.shade50,
-    //                           child: Icon(
-    //                             FontAwesomeIcons.barcode,
-    //                             color: Colors.blue,
-    //                             size: 15,
-    //                           ),
-    //                         ),
-    //                         FxSpacing.width(20),
-    //                         FxText.titleLarge(
-    //                           "${job.barcode}",
-    //                           fontWeight: 600,
-    //                           // color: Colors.blue,
-    //                         ),
-    //                       ],
-    //                     ),
-    //                     Stack(
-    //                       children: [
-    //                         // Transform.translate(
-    //                         //   offset: Offset(0, 5),
-    //                         //   child:
-    //                         // ),
-    //                         Transform.translate(
-    //                           offset: Offset(0, 0),
-    //                           child: FxContainer(
-    //                               child: FxText.titleSmall(
-    //                                   controller
-    //                                       .getOrderStatusTitle(job.orderStatus),
-    //                                   fontWeight: 600,
-    //                                   color: Colors.white),
-    //                               paddingAll: 8,
-    //                               color: controller
-    //                                   .getOrderStatusColor(job.orderStatus)),
-    //                         ),
-    //                       ],
-    //                     )
-    //                   ],
-    //                 ),
-    //                 FxSpacing.height(20),
-    //                 Container(
-    //                   child: Row(
-    //                     children: [
-    //                       // FxSpacing.width(1),
-    //                       Icon(
-    //                         FontAwesomeIcons.calendar,
-    //                         color: Colors.blue,
-    //                         size: 20,
-    //                       ),
-    //                       FxSpacing.width(10),
-    //                       FxText(
-    //                         "${formatDate(job.deliveryDateEx, [
-    //                               dd,
-    //                               '/',
-    //                               mm,
-    //                               '/',
-    //                               yyyy,
-    //                               ' ',
-    //                               HH,
-    //                               ':',
-    //                               nn
-    //                             ])}",
-    //                         fontWeight: 600,
-    //                         fontSize: titleFontSize,
-    //                         color: Colors.grey,
-    //                       ),
-    //                     ],
-    //                   ),
-    //                 ),
-    //                 FxSpacing.height(20),
-    //                 (job.remark.isNotEmpty)
-    //                     ? FxContainer(
-    //                         color: Colors.red.shade100,
-    //                         child: Column(
-    //                           crossAxisAlignment: CrossAxisAlignment.stretch,
-    //                           children: [
-    //                             FxText(
-    //                               "หมายเหตุ : ",
-    //                               xMuted: false,
-    //                               fontSize: titleFontSize,
-    //                               color: Colors.red,
-    //                             ),
-    //                             FxSpacing.width(2),
-    //                             FxText(
-    //                               job.remark,
-    //                               xMuted: false,
-    //                               color: Colors.red,
-    //                               fontSize: titleFontSize,
-    //                               maxLines: 5,
-    //                               overflow: TextOverflow.ellipsis,
-    //                             ),
-    //                           ],
-    //                         ),
-    //                       )
-    //                     : Container()
-    //               ],
-    //             ),
-    //           ),
-    //         ],
-    //       ),
-    //     ),
-    //   );
-    // }
-    return FxContainer.transparent(
-      padding: FxSpacing.only(left: 10, right: 10),
-      bordered: false,
-      borderRadiusAll: 0,
-      child: FxContainer.bordered(
+  Widget _buildRadioButton(dynamic job) {
+    if (controller.selectedJobs.length > 0) {
+      return FxContainer.roundBordered(
         onTap: () {
-          if (controller.toggleSendJobButton) {
-            if (!job.isChecked) {
-              job.isChecked = true;
-              controller.selectedJobIds.add(job);
-            } else {
-              job.isChecked = false;
-              controller.selectedJobIds.remove(job);
-            }
-            setState(() {});
+          if (job is JobDetailWrapper) {
+            var foundItems = job.items.where(
+                (element) => controller.selectedJobIds.contains(element));
+            controller.selectedJobIds.removeWhere(
+              (element) {
+                return foundItems.contains(element);
+              },
+            );
+            controller.selectedJobs.remove(job);
+          } else {
+            controller.selectedJobIds.remove(job);
+            controller.selectedJobs.removeWhere((element) {
+              return element.items.contains(job);
+            });
           }
-          // else {
-          //   controller.goToJobDetailPage(job);
-          // }
+          setState(() {});
         },
-        borderRadiusAll: 20,
-        color: Colors.white,
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ExpansionTileNew(
-                    title: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          children: [
-                            (controller.toggleSendJobButton)
-                                ? Row(
-                                    children: [
-                                      Container(
-                                        decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.blue),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(4),
-                                          child: job.isChecked
-                                              ? Icon(
-                                                  Icons.check,
-                                                  size: 20.0,
-                                                  color: Colors.white,
-                                                )
-                                              : Icon(
-                                                  Icons.check_box_outline_blank,
-                                                  size: 20.0,
-                                                  color: Colors.blue,
-                                                ),
-                                        ),
-                                      ),
-                                      FxSpacing.width(10),
-                                    ],
-                                  )
-                                : Container(),
-                            // Icon(
-                            //   Icons.list_alt,
-                            //   color: Colors.blue,
-                            //   size: 20,
-                            // ),
-                            FxSpacing.width(10),
-                            Expanded(
-                              child: Container(
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+        bordered: false,
+        color: Colors.red,
+        paddingAll: 2,
+        marginAll: 10,
+        child: Icon(FontAwesomeIcons.xmark, color: Colors.white),
+      );
+    }
+
+    return Row(
+      children: [
+        AnimatedContainer(
+          duration: Duration(milliseconds: 300),
+          curve: Curves.ease,
+          width: (controller.selectionJobType == SelectionJobType.send_job)
+              ? 30
+              : 0,
+          child: AnimatedOpacity(
+            duration: Duration(milliseconds: 300),
+            opacity: (controller.selectionJobType == SelectionJobType.send_job)
+                ? 1.0
+                : 0.0,
+            child: FxContainer.transparent(
+              paddingAll: 0,
+              child: RadioCheckButton(job.isChecked),
+              // child: job.isChecked
+              //     ? Icon(
+              //         Icons.check_circle,
+              //         size: 30,
+              //         color: Colors.blue,
+              //       )
+              //     : Icon(
+              //         Icons.circle,
+              //         size: 30,
+              //         color: Colors.grey,
+              //       ),
+            ),
+          ),
+        ),
+        FxSpacing.width(
+            (controller.selectionJobType == SelectionJobType.send_job)
+                ? 10
+                : 0),
+      ],
+    );
+  }
+
+  Widget _buildCall(JobDetail job) {
+    return (job.contactTelephone.isNotEmpty)
+        ? FxContainer.roundBordered(
+            marginAll: 0,
+            onTap: () async {
+              await launchUrl(Uri(scheme: 'tel', path: job.contactTelephone));
+            },
+            color: (job.contactTelephone.isNotEmpty)
+                ? Colors.green.shade300
+                : Colors.grey,
+            paddingAll: 5,
+            child: Icon(
+              Icons.call,
+              color: Colors.white,
+              size: 20,
+            ),
+          )
+        : Container();
+  }
+
+  Widget clearSelectionDialog(context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8.0))),
+      child: Container(
+        padding: FxSpacing.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  margin: FxSpacing.right(16),
+                  child: Icon(
+                    Icons.warning,
+                    size: 28,
+                    color: Colors.red,
+                  ),
+                ),
+                FxSpacing.width(8),
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                        style: FxTextStyle.bodyLarge(
+                            fontWeight: 500, letterSpacing: 0.2),
+                        children: <TextSpan>[
+                          TextSpan(text: "ยกเลิกรายการที่เลือกทั้งหมดหรือไม่?"),
+                        ]),
+                  ),
+                )
+              ],
+            ),
+            Container(
+                margin: FxSpacing.top(8),
+                alignment: AlignmentDirectional.centerEnd,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    FxButton.text(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: FxText.bodyMedium(
+                          "ปิด",
+                          fontWeight: 700,
+                          letterSpacing: 0.4,
+                          color: Colors.red,
+                        )),
+                    FxSpacing.width(10),
+                    FxButton(
+                        backgroundColor: SLColor.LIGHTBLUE2,
+                        borderRadiusAll: 4,
+                        elevation: 0,
+                        onPressed: () {
+                          Navigator.pop(context);
+                          // if (controller.selectionJobType ==
+                          //     SelectionJobTypes.camera) {
+                          //   controller.filteredJobs = [];
+                          // }
+                          controller.clearAllSelection();
+                        },
+                        child: FxText.bodyMedium("ยืนยัน",
+                            letterSpacing: 0.4,
+                            color: theme.colorScheme.onPrimary)),
+                  ],
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget inputBarcodeDialog(context) {
+    var isProcessing = false;
+    var errorFromServerText = '';
+    var _textController = TextEditingController();
+    return Dialog(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8.0))),
+      child: StatefulBuilder(builder: (context, setState) {
+        return Container(
+          padding: FxSpacing.all(24),
+          child: Form(
+            key: controller.formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                FxText.titleLarge(
+                  (controller.selectionJobType == SelectionJobType.receive_job)
+                      ? 'ค้นหาบาร์โค้ดและรับงาน'
+                      : 'ป้อนบาร์โค้ดเพื่อเลือก',
+                  fontWeight: 600,
+                ),
+                (errorFromServerText.isNotEmpty)
+                    ? FxText.titleMedium(
+                        errorFromServerText,
+                        fontWeight: 600,
+                        color: Colors.red,
+                      )
+                    : Container(),
+                FxSpacing.height(20),
+                // FxTextField()
+                TextFormField(
+                  controller: _textController,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
+                    errorStyle: TextStyle(fontFamily: 'Kanit', fontSize: 14),
+                    filled: true,
+                    fillColor: customTheme.card,
+                    labelText: 'ป้อนหมายเลขบาร์โค้ด',
+                    contentPadding: EdgeInsets.zero,
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      borderSide: BorderSide(
+                        color: Colors.red,
+                      ),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      borderSide: BorderSide(
+                        color: Colors.red,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      borderSide: BorderSide(
+                        color: Colors.blue,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      borderSide: BorderSide(
+                        color: Colors.blue,
+                      ),
+                    ),
+                    prefixIcon: Icon(
+                      FontAwesomeIcons.barcode,
+                      color: Colors.blue,
+                    ),
+                    labelStyle: FxTextStyle.bodyMedium(
+                        color: theme.colorScheme.onBackground, xMuted: true),
+                  ),
+                  cursorColor: customTheme.medicarePrimary,
+                  autofocus: false,
+                  validator: (value) {
+                    if (value!.isEmpty) return "กรุณาป้อนบาร์โค้ด";
+                  },
+                ),
+                Container(
+                    margin: FxSpacing.top(8),
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        AbsorbPointer(
+                          absorbing: isProcessing,
+                          child: FxButton.text(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: FxText.bodyMedium(
+                                "ปิด",
+                                fontWeight: 700,
+                                letterSpacing: 0.4,
+                                color: isProcessing ? Colors.grey : Colors.red,
+                              )),
+                        ),
+                        FxSpacing.width(10),
+                        AbsorbPointer(
+                          absorbing: isProcessing,
+                          child: FxButton(
+                              backgroundColor: isProcessing
+                                  ? Colors.grey
+                                  : SLColor.LIGHTBLUE2,
+                              borderRadiusAll: 4,
+                              elevation: 0,
+                              onPressed: () async {
+                                if (!controller.formKey.currentState!
+                                    .validate()) return;
+                                var value = _textController.text;
+                                if (controller.selectionJobType ==
+                                    SelectionJobType.receive_job) {
+                                  if (value.isNotEmpty) {
+                                    setState(() {
+                                      errorFromServerText = '';
+                                      isProcessing = true;
+                                    });
+                                    controller.appController.api
+                                        .updateJobStatusByBarCode(value)
+                                        .then((response) {
+                                      if (response != null) {
+                                        if (response["isSuccess"]) {
+                                          Navigator.of(context).pop();
+                                          controller.reloadAllJobs(
+                                              forceReload: true);
+                                        } else {
+                                          setState(() {
+                                            errorFromServerText =
+                                                response["message"];
+                                          });
+                                        }
+                                      }
+                                    }).catchError((error, stackTrace) {
+                                      setState(() {
+                                        errorFromServerText =
+                                            'ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง';
+                                      });
+                                    }).whenComplete(() {
+                                      setState(() {
+                                        isProcessing = false;
+                                      });
+                                    });
+                                  }
+                                } else {
+                                  var errorMessage =
+                                      await controller.searchJobsForSend(value);
+                                  Navigator.of(context).pop();
+                                  if (errorMessage.isNotEmpty) {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) =>
+                                            _globalWidget.errorDialog(
+                                                context, errorMessage));
+                                  }
+                                }
+                              },
+                              child: Row(
+                                children: [
+                                  FxText.bodyMedium("ยืนยัน",
+                                      letterSpacing: 0.4,
+                                      color: theme.colorScheme.onPrimary),
+                                  FxSpacing.width(10),
+                                  (isProcessing)
+                                      ? Container(
+                                          width: 15,
+                                          height: 15,
+                                          child: CircularProgressIndicator(
+                                              color: Colors.blue,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                      Colors.blue)),
+                                        )
+                                      : Container(),
+                                ],
+                              )),
+                        ),
+                      ],
+                    )),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget showConfirmScanBarcode(context, jobDetail) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8.0))),
+      child: Container(
+        padding: FxSpacing.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  margin: FxSpacing.right(16),
+                  child: Icon(
+                    FontAwesomeIcons.circleCheck,
+                    size: 28,
+                    color: Colors.green.shade700,
+                  ),
+                ),
+                FxSpacing.width(8),
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                        style: FxTextStyle.bodyLarge(
+                            fontWeight: 500, letterSpacing: 0.2),
+                        children: <TextSpan>[
+                          TextSpan(text: "พบหมายเลขบาร์โค้ด "),
+                          TextSpan(
+                              text: "${jobDetail[0].barcode}",
+                              style: TextStyle(fontWeight: FontWeight.w600)),
+                        ]),
+                  ),
+                )
+              ],
+            ),
+            Container(
+                margin: FxSpacing.top(8),
+                alignment: AlignmentDirectional.centerEnd,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    FxButton.text(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          controller.isShowList = true;
+                          setState(() {});
+                        },
+                        child: FxText.bodyMedium("ยกเลิก",
+                            fontWeight: 700, letterSpacing: 0.4)),
+                    FxSpacing.width(10),
+                    FxButton(
+                        backgroundColor: SLColor.LIGHTBLUE2,
+                        borderRadiusAll: 4,
+                        elevation: 0,
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          controller.selectJobByBarcode(jobDetail);
+                          _mobileScannerController.start();
+                        },
+                        child: FxText.bodyMedium("ยืนยันรายการ",
+                            letterSpacing: 0.4,
+                            color: theme.colorScheme.onPrimary)),
+                  ],
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget showSendJobRequired(context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8.0))),
+      child: Container(
+        padding: FxSpacing.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  margin: FxSpacing.right(16),
+                  child: Icon(
+                    FontAwesomeIcons.xmark,
+                    size: 28,
+                    color: Colors.red.shade700,
+                  ),
+                ),
+                FxSpacing.width(8),
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                        style: FxTextStyle.bodyLarge(
+                            fontWeight: 500, letterSpacing: 0.2),
+                        children: <TextSpan>[
+                          TextSpan(text: "กรุณาเลือกงานที่ต้องการส่ง")
+                        ]),
+                  ),
+                )
+              ],
+            ),
+            Container(
+                margin: FxSpacing.top(8),
+                alignment: AlignmentDirectional.centerEnd,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    FxButton.text(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: FxText.bodyMedium("ตกลง",
+                            fontWeight: 700, letterSpacing: 0.4)),
+                  ],
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget showDuplicateScanBarcode(context, jobDetail) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8.0))),
+      child: Container(
+        padding: FxSpacing.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  margin: FxSpacing.right(16),
+                  child: Icon(
+                    FontAwesomeIcons.xmark,
+                    size: 28,
+                    color: Colors.red.shade700,
+                  ),
+                ),
+                FxSpacing.width(8),
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                        style: FxTextStyle.bodyLarge(
+                            fontWeight: 500, letterSpacing: 0.2),
+                        children: <TextSpan>[
+                          TextSpan(text: "หมายเลขบาร์โค้ด "),
+                          TextSpan(
+                              text: "${jobDetail[0].barcode}",
+                              style: TextStyle(fontWeight: FontWeight.w600)),
+                          TextSpan(text: " ได้ถูกเลือกแล้ว"),
+                        ]),
+                  ),
+                )
+              ],
+            ),
+            Container(
+                margin: FxSpacing.top(8),
+                alignment: AlignmentDirectional.centerEnd,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    FxButton.text(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          controller.isShowList = true;
+                          setState(() {});
+                        },
+                        child: FxText.bodyMedium("ยกเลิก",
+                            fontWeight: 700, letterSpacing: 0.4)),
+                    FxSpacing.width(10),
+                    FxButton(
+                        backgroundColor: SLColor.LIGHTBLUE2,
+                        borderRadiusAll: 4,
+                        elevation: 0,
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          _mobileScannerController.start();
+                        },
+                        child: FxText.bodyMedium("ทำรายการต่อ",
+                            letterSpacing: 0.4,
+                            color: theme.colorScheme.onPrimary)),
+                  ],
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget showSelectionTypeDialog(context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8.0))),
+      child: Container(
+        padding: FxSpacing.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  margin: FxSpacing.right(16),
+                  child: Icon(
+                    FontAwesomeIcons.barcode,
+                    size: 28,
+                  ),
+                ),
+                FxSpacing.width(8),
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                        style: FxTextStyle.bodyLarge(
+                            fontWeight: 500, letterSpacing: 0.2),
+                        children: <TextSpan>[
+                          TextSpan(text: "เปิดใช้งานเลือกงานโดยสแกนบาร์โค้ด?"),
+                        ]),
+                  ),
+                )
+              ],
+            ),
+            Container(
+                margin: FxSpacing.top(8),
+                alignment: AlignmentDirectional.centerEnd,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    FxButton.text(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: FxText.bodyMedium("ปิด",
+                            fontWeight: 700, letterSpacing: 0.4)),
+                    FxSpacing.width(10),
+                    FxButton(
+                        backgroundColor: SLColor.LIGHTBLUE2,
+                        borderRadiusAll: 4,
+                        elevation: 0,
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          try {
+                            // controller.toggleSendJobButtonFunc(
+                            //     SelectionJobTypes.camera);
+                          } on PlatformException {}
+                        },
+                        child: FxText.bodyMedium("ยืนยัน",
+                            letterSpacing: 0.4,
+                            color: theme.colorScheme.onPrimary)),
+                  ],
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildJobDetailWrapperItem(JobDetailWrapper wrapper) {
+    var titleFontSize = 14.0;
+    if (wrapper.items.length == 1) {
+      return _buildJobDetailItem(wrapper.items[0]);
+    }
+
+    return FxContainer.transparent(
+      onTap: () {
+        if (controller.selectionJobType == SelectionJobType.receive_job ||
+            controller.selectedJobs.length > 0) return;
+
+        if (!wrapper.isChecked) {
+          wrapper.isChecked = true;
+          wrapper.items.forEach((element) {
+            element.isChecked = true;
+            if (!controller.selectedJobIds.contains(element)) {
+              controller.selectedJobIds.add(element);
+            }
+          });
+        } else {
+          wrapper.isChecked = false;
+          wrapper.items.forEach((element) {
+            element.isChecked = false;
+            controller.selectedJobIds.remove(element);
+          });
+        }
+        setState(() {});
+      },
+      paddingAll: 0,
+      bordered: false,
+      child: Container(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // FxSpacing.height(10),
+                    ExpansionTileNew(
+                      backgroundColor: Colors.transparent,
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            children: [
+                              _buildRadioButton(wrapper),
+                              Expanded(
+                                child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                    Row(
                                       children: [
-                                        Row(
-                                          children: [
-                                            FxText.titleLarge(
-                                              "${job.barcode}",
-                                              fontWeight: 600,
-                                              // color: Colors.blue,
-                                            ),
-                                            // FxSpacing.width(10),
-                                            // (job.remark.isNotEmpty)
-                                            //     ? FxContainer.roundBordered(
-                                            //         paddingAll: 0,
-                                            //         color: Colors.red,
-                                            //         child: Row(
-                                            //           children: [
-                                            //             Icon(
-                                            //               FontAwesomeIcons
-                                            //                   .exclamation,
-                                            //               color: Colors.white,
-                                            //               size: 15,
-                                            //             ),
-                                            //           ],
-                                            //         ),
-                                            //       )
-                                            //     : Container(),
-                                          ],
+                                        FxText.titleLarge(
+                                          "${wrapper.title}",
+                                          fontWeight: 600,
+                                          color: Colors.blue,
                                         ),
+                                        FxSpacing.width(20),
+                                        Expanded(
+                                          child: Stack(
+                                            children: [
+                                              (wrapper.items[0].directionType ==
+                                                      1)
+                                                  ? FxContainer.bordered(
+                                                      bordered: false,
+                                                      color:
+                                                          Colors.red.shade300,
+                                                      paddingAll: 5,
+                                                      child: FxText("จัดส่ง",
+                                                          fontSize:
+                                                              titleFontSize,
+                                                          color: Colors.white))
+                                                  : FxContainer.bordered(
+                                                      bordered: false,
+                                                      color:
+                                                          Colors.red.shade300,
+                                                      paddingAll: 5,
+                                                      child: FxText("รับคืน",
+                                                          fontSize:
+                                                              titleFontSize,
+                                                          color: Colors.white)),
+                                              Positioned(
+                                                  right: 0,
+                                                  child: _buildCall(
+                                                      wrapper.items[0])),
+                                            ],
+                                          ),
+                                        ),
+                                        // _buildCall(wrapper.items[0]),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          FxSpacing.height(10),
+                          (controller.selectedJobStatus == JobStatus.SENDING &&
+                                  DateTime.now()
+                                      .subtract(Duration(days: 3))
+                                      .isAfter(wrapper.items[0].deliveryDate))
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    FxText("เกินกำหนด 3 วัน!!",
+                                        fontWeight: 600,
+                                        fontSize: 14,
+                                        color: Colors.red),
+                                    FxSpacing.height(10),
+                                  ],
+                                )
+                              : Container(),
+                          Row(
+                            children: [
+                              FxText(
+                                "จำนวนสินค้าทั้งหมด: ",
+                                fontWeight: 600,
+                                fontSize: titleFontSize,
+                                color: Colors.grey,
+                              ),
+                              FxSpacing.width(10),
+                              FxText(
+                                "${wrapper.totalQty}",
+                                fontWeight: 600,
+                                fontSize: titleFontSize,
+                                color: Colors.grey,
+                              ),
+                            ],
+                          ),
+                          FxSpacing.height(10),
+                          Row(
+                            children: [
+                              Icon(
+                                FontAwesomeIcons.user,
+                                color: Colors.blue,
+                                size: 20,
+                              ),
+                              FxSpacing.width(10),
+                              Flexible(
+                                child: FxText(
+                                  "${wrapper.items[0].receiverName}",
+                                  fontWeight: 600,
+                                  fontSize: titleFontSize,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                          (controller.selectedJobs.length == 0)
+                              ? Column(
+                                  children: [
+                                    FxSpacing.height(10),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          FontAwesomeIcons.route,
+                                          color: Colors.blue,
+                                          size: 20,
+                                        ),
+                                        FxSpacing.width(10),
                                         FxText(
-                                          job.jobNumber,
-                                          xMuted: true,
+                                          "${wrapper.items[0].routeName}",
+                                          fontWeight: 600,
                                           fontSize: titleFontSize,
+                                          color: Colors.grey,
                                         ),
                                       ],
                                     ),
-                                    FxContainer(
-                                        child: FxText.titleSmall(
-                                            controller.getOrderStatusTitle(
-                                                job.orderStatus),
-                                            fontWeight: 600,
-                                            color: Colors.white),
-                                        paddingAll: 8,
-                                        color: controller.getOrderStatusColor(
-                                            job.orderStatus)),
+                                    FxSpacing.height(10),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          FontAwesomeIcons.calendar,
+                                          color: Colors.blue,
+                                          size: 20,
+                                        ),
+                                        FxSpacing.width(10),
+                                        FxText(
+                                          "${formatDate(wrapper.items[0].deliveryDateEx, [
+                                                dd,
+                                                '/',
+                                                mm,
+                                                '/',
+                                                yyyy,
+                                                ' ',
+                                                HH,
+                                                ':',
+                                                nn
+                                              ])}",
+                                          fontWeight: 600,
+                                          fontSize: titleFontSize,
+                                          color: Colors.grey,
+                                        ),
+                                      ],
+                                    ),
+                                    FxSpacing.height(10),
+                                    (wrapper.items[0].remark.isNotEmpty)
+                                        ? FxContainer(
+                                            color: Colors.red.shade100,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.stretch,
+                                              children: [
+                                                FxText(
+                                                  "หมายเหตุ : ",
+                                                  xMuted: false,
+                                                  fontSize: titleFontSize,
+                                                  color: Colors.red,
+                                                ),
+                                                FxSpacing.width(2),
+                                                FxText(
+                                                  wrapper.items[0].remark,
+                                                  xMuted: false,
+                                                  color: Colors.red,
+                                                  fontSize: titleFontSize,
+                                                  maxLines: 5,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        : Container(),
                                   ],
-                                ),
+                                )
+                              : Container(),
+                        ],
+                      ),
+                      tilePadding: EdgeInsets.zero,
+                      childrenPadding: EdgeInsets.all(10),
+                      children: wrapper.items.map((e) {
+                        return _buildJobDetailItemByGroup(wrapper, e);
+                      }).toList(),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildJobDetailItem(JobDetail job) {
+    var titleFontSize = 14.0;
+    return FxContainer.transparent(
+      onTap: () {
+        if (controller.selectionJobType == SelectionJobType.receive_job) return;
+
+        if (controller.selectedJobs.length > 0) {
+          controller.goToJobDetailPage(job);
+          return;
+        }
+
+        if (!job.isChecked) {
+          job.isChecked = true;
+          if (!controller.selectedJobIds.contains(job)) {
+            controller.selectedJobIds.add(job);
+          }
+        } else {
+          job.isChecked = false;
+          controller.selectedJobIds.remove(job);
+        }
+        setState(() {});
+      },
+      paddingAll: 0,
+      bordered: false,
+      child: Container(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  _buildRadioButton(job),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        FxContainer.transparent(
+                          paddingAll: 5,
+                          onTap: () {
+                            controller.goToJobDetailPage(job);
+                          },
+                          child: FxText(
+                            "${job.barcode}",
+                            fontWeight: 600,
+                            fontSize: 20,
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                        FxSpacing.width(20),
+                        Expanded(
+                          child: Stack(
+                            children: [
+                              (job.directionType == 1)
+                                  ? FxContainer.bordered(
+                                      bordered: false,
+                                      color: Colors.red.shade300,
+                                      paddingAll: 5,
+                                      child: FxText("จัดส่ง",
+                                          fontSize: titleFontSize,
+                                          color: Colors.white))
+                                  : FxContainer.bordered(
+                                      bordered: false,
+                                      color: Colors.red.shade300,
+                                      paddingAll: 5,
+                                      child: FxText("รับคืน",
+                                          fontSize: titleFontSize,
+                                          color: Colors.white)),
+                              Positioned(right: 0, child: _buildCall(job)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              FxSpacing.height(10),
+              (controller.selectedJobStatus == JobStatus.SENDING &&
+                      DateTime.now()
+                          .subtract(Duration(days: 3))
+                          .isAfter(job.deliveryDate))
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        FxText("เกินกำหนด 3 วัน!!",
+                            fontWeight: 600, fontSize: 14, color: Colors.red),
+                        FxSpacing.height(10),
+                      ],
+                    )
+                  : Container(),
+              Row(
+                children: [
+                  FxText(
+                    "จำนวนสินค้า: ",
+                    fontWeight: 600,
+                    fontSize: titleFontSize,
+                    color: Colors.grey,
+                  ),
+                  FxSpacing.width(10),
+                  FxText(
+                    "${job.qty}",
+                    fontWeight: 600,
+                    fontSize: titleFontSize,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+              FxSpacing.height(10),
+              Row(
+                children: [
+                  Icon(
+                    FontAwesomeIcons.user,
+                    color: Colors.blue,
+                    size: 20,
+                  ),
+                  FxSpacing.width(10),
+                  Flexible(
+                    child: FxText(
+                      "${job.receiverName}",
+                      fontWeight: 600,
+                      fontSize: titleFontSize,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+              (controller.selectedJobs.length == 0)
+                  ? Column(
+                      children: [
+                        FxSpacing.height(10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    FontAwesomeIcons.route,
+                                    color: Colors.blue,
+                                    size: 20,
+                                  ),
+                                  FxSpacing.width(10),
+                                  FxText(
+                                    "${job.routeName}",
+                                    fontWeight: 600,
+                                    fontSize: titleFontSize,
+                                    color: Colors.grey,
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -429,722 +1159,726 @@ class _HomeScreenState extends SLState<HomeScreen>
                                     fontWeight: 600,
                                     fontSize: titleFontSize,
                                     color: Colors.grey,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            FxContainer.transparent(
-                              onTap: () {
-                                controller.goToJobDetailPage(job);
-                              },
-                              paddingAll: 0,
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    FontAwesomeIcons.eye,
-                                    color: Colors.blue,
-                                    size: 20,
-                                  ),
-                                  FxSpacing.width(10),
-                                  FxText(
-                                    "View",
-                                    fontWeight: 600,
-                                    fontSize: titleFontSize,
-                                    color: Colors.blue,
-                                  ),
+                                  )
                                 ],
                               ),
                             )
                           ],
-                        )
+                        ),
+                        FxSpacing.height(10),
+                        (job.remark.isNotEmpty)
+                            ? FxContainer(
+                                color: Colors.red.shade100,
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    FxText(
+                                      "หมายเหตุ : ",
+                                      xMuted: false,
+                                      fontSize: titleFontSize,
+                                      color: Colors.red,
+                                    ),
+                                    FxSpacing.width(2),
+                                    FxText(
+                                      job.remark,
+                                      xMuted: false,
+                                      color: Colors.red,
+                                      fontSize: titleFontSize,
+                                      maxLines: 5,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : Container(),
                       ],
-                    ),
-                    tilePadding: EdgeInsets.zero,
-                    childrenPadding: EdgeInsets.all(10),
-                    children: [
-                      (job.reference3.isNotEmpty)
-                          ? Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                FxText(
-                                  "อ้างอิง3 : ",
-                                  fontSize: titleFontSize,
-                                  xMuted: false,
-                                ),
-                                FxSpacing.width(2),
-                                Flexible(
-                                  child: FxText(
-                                    job.reference3,
-                                    xMuted: true,
-                                    maxLines: 2,
-                                    fontSize: titleFontSize,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Container(),
-                      Row(
-                        children: [
-                          FxText(
-                            "วันที่บิล : ",
-                            fontSize: titleFontSize,
-                            xMuted: false,
-                          ),
-                          FxSpacing.width(2),
-                          FxText(
-                            "${formatDate(job.receiveDateEx, [
-                                  dd,
-                                  '/',
-                                  mm,
-                                  '/',
-                                  yyyy,
-                                  ' ',
-                                  HH,
-                                  ':',
-                                  nn
-                                ])}",
-                            xMuted: true,
-                            fontSize: titleFontSize,
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          FxText(
-                            "วันที่ใบคุม : ",
-                            fontSize: titleFontSize,
-                            xMuted: false,
-                          ),
-                          FxSpacing.width(2),
-                          FxText.titleMedium(
-                            "${formatDate(job.deliveryDocumentDateEx, [
-                                  dd,
-                                  '/',
-                                  mm,
-                                  '/',
-                                  yyyy,
-                                  ' ',
-                                  HH,
-                                  ':',
-                                  nn
-                                ])}",
-                            xMuted: true,
-                            fontSize: titleFontSize,
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          FxText(
-                            "วันที่สร้าง : ",
-                            xMuted: false,
-                            fontSize: titleFontSize,
-                          ),
-                          FxSpacing.width(2),
-                          FxText(
-                            "${formatDate(job.createdDateFromServerEx, [
-                                  dd,
-                                  '/',
-                                  mm,
-                                  '/',
-                                  yyyy,
-                                  ' ',
-                                  HH,
-                                  ':',
-                                  nn
-                                ])}",
-                            xMuted: true,
-                            fontSize: titleFontSize,
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          FxText(
-                            "จำนวนสินค้า : ",
-                            xMuted: false,
-                            fontSize: titleFontSize,
-                          ),
-                          FxSpacing.width(2),
-                          FxText(
-                            job.qty.toString(),
-                            xMuted: true,
-                            fontSize: titleFontSize,
-                          ),
-                        ],
-                      ),
-                      FxSpacing.height(10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          FxText(
-                            "ลูกค้า : ",
-                            xMuted: false,
-                            fontSize: titleFontSize,
-                          ),
-                          FxSpacing.width(2),
-                          FxText(
-                            job.customerName,
-                            xMuted: true,
-                            maxLines: 2,
-                            fontSize: titleFontSize,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                      FxSpacing.height(5),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          FxText(
-                            "รายละเอียดสินค้า : ",
-                            textAlign: TextAlign.start,
-                            xMuted: false,
-                            fontSize: titleFontSize,
-                          ),
-                          // FxSpacing.width(2),
-                          FxText(
-                            (job.goodsDetails.isNotEmpty)
-                                ? job.goodsDetails
-                                : 'ไม่มี',
-                            xMuted: true,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            fontSize: titleFontSize,
-                          ),
-                        ],
-                      ),
-                      FxSpacing.height(10),
-                      // FxDashedDivider(),
-                      // FxSpacing.height(10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          FxText(
-                            "ชื่อผู้รับ : ",
-                            xMuted: false,
-                            fontSize: titleFontSize,
-                          ),
-                          FxSpacing.width(2),
-                          FxText(
-                            job.receiverName,
-                            xMuted: true,
-                            fontSize: titleFontSize,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                      FxSpacing.height(5),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          FxText(
-                            "ที่อยู่ผู้รับ : ",
-                            xMuted: false,
-                            fontSize: titleFontSize,
-                          ),
-                          FxSpacing.width(2),
-                          FxText(
-                            job.receiverFullAddress,
-                            xMuted: true,
-                            maxLines: 10,
-                            fontSize: titleFontSize,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                      FxSpacing.height(10),
-                      (job.remark.isNotEmpty)
-                          ? FxContainer(
-                              color: Colors.red.shade100,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  FxText(
-                                    "หมายเหตุ : ",
-                                    xMuted: false,
-                                    fontSize: titleFontSize,
-                                    color: Colors.red,
-                                  ),
-                                  FxSpacing.width(2),
-                                  FxText(
-                                    job.remark,
-                                    xMuted: false,
-                                    color: Colors.red,
-                                    fontSize: titleFontSize,
-                                    maxLines: 5,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            )
-                          : Container(),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+                    )
+                  : Container(),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // Widget _buildCustomerList(JobDetail item) {
-  //   //var titleFontSize = 18.0;
-  //   // return StickyHeader(
-  //   //     header: FxText.titleLarge(wrapper.title),
-  //   //     content: Container(child: FxText("Test")));
+  Widget _buildJobDetailItemByGroup(JobDetailWrapper wrapper, JobDetail job) {
+    var titleFontSize = 14.0;
+    return FxContainer.transparent(
+      onTap: () {
+        if (controller.selectionJobType == SelectionJobType.receive_job) return;
 
-  //   return FxContainer.transparent(
-  //       padding: FxSpacing.only(left: 10, right: 10),
-  //       onTap: () {
-  //         // if (controller.toggleSendJobButton) {
-  //         //   if (!job.isChecked) {
-  //         //     job.isChecked = true;
-  //         //     controller.selectedJobIds.add(job);
-  //         //   } else {
-  //         //     job.isChecked = false;
-  //         //     controller.selectedJobIds.remove(job);
-  //         //   }
-  //         //   setState(() {});
-  //         // } else {
-  //         //   controller.goToJobDetailPage(job);
-  //         // }
-  //       },
-  //       bordered: false,
-  //       borderRadiusAll: 0,
-  //       child: FxContainer.bordered(
-  //         borderRadiusAll: 20,
-  //         color: Colors.white,
-  //         child: Row(
-  //           children: [
-  //             Expanded(
-  //               child: Column(
-  //                 crossAxisAlignment: CrossAxisAlignment.start,
-  //                 children: [
-  //                   ExpansionTile(
-  //                     title: FxText.titleMedium(
-  //                       "${wrapper.title}",
-  //                       fontWeight: 600,
-  //                       // color: Colors.blue,
-  //                     ),
-  //                     children: [
-  //                       Container(
-  //                         child: ListView.builder(
-  //                             itemCount: wrapper.items.length,
-  //                             itemBuilder: (context, index) {
-  //                               return Container(
-  //                                 child: FxText.titleMedium(
-  //                                     wrapper.items[index].barcode),
-  //                               );
-  //                             }),
-  //                       )
-  //                     ],
-  //                   ),
-  //                 ],
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ));
-  // }
+        if (controller.selectedJobs.length > 0) {
+          controller.goToJobDetailPage(job);
+          return;
+        }
+
+        if (!job.isChecked) {
+          job.isChecked = true;
+          if (!controller.selectedJobIds.contains(job))
+            controller.selectedJobIds.add(job);
+        } else {
+          job.isChecked = false;
+          controller.selectedJobIds.remove(job);
+        }
+        wrapper.isChecked =
+            wrapper.items.where((element) => element.isChecked).length ==
+                wrapper.items.length;
+        setState(() {});
+      },
+      paddingAll: 0,
+      margin: FxSpacing.only(left: 10, right: 10),
+      bordered: false,
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FxSpacing.height(10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        (controller.selectedJobs.length == 0)
+                            ? _buildRadioButton(job)
+                            : Container(),
+                        Expanded(
+                          child: Container(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Flexible(
+                                      child: Column(
+                                        children: [
+                                          FxContainer.none(
+                                            color: Colors.transparent,
+                                            paddingAll: 0,
+                                            onTap: () {
+                                              controller.goToJobDetailPage(job);
+                                            },
+                                            child: FxText(
+                                              "${job.receiverName}",
+                                              fontWeight: 600,
+                                              fontSize: 18,
+                                              color: Colors.blue,
+                                              decoration:
+                                                  TextDecoration.underline,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    // Column(
+                                    //   children: [
+                                    //     (job.directionType == 1)
+                                    //         ? FxContainer.bordered(
+                                    //             bordered: false,
+                                    //             color: Colors.red.shade300,
+                                    //             paddingAll: 5,
+                                    //             child: FxText("จัดส่ง",
+                                    //                 fontSize: titleFontSize,
+                                    //                 color: Colors.white))
+                                    //         : FxContainer.bordered(
+                                    //             bordered: false,
+                                    //             color: Colors.red.shade300,
+                                    //             paddingAll: 5,
+                                    //             child: FxText("รับคืน",
+                                    //                 fontSize: titleFontSize,
+                                    //                 color: Colors.white)),
+                                    //   ],
+                                    // ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    FxSpacing.height(10),
+                    Row(
+                      children: [
+                        FxText(
+                          "จำนวนสินค้า: ",
+                          fontWeight: 600,
+                          fontSize: titleFontSize,
+                          color: Colors.grey,
+                        ),
+                        FxSpacing.width(10),
+                        FxText(
+                          "${job.qty}",
+                          fontWeight: 600,
+                          fontSize: titleFontSize,
+                          color: Colors.grey,
+                        ),
+                      ],
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        FxText(
+                          "รายละเอียดสินค้า: ",
+                          fontWeight: 600,
+                          fontSize: titleFontSize,
+                          color: Colors.grey,
+                        ),
+                        FxSpacing.width(10),
+                        Flexible(
+                          child: FxText(
+                            "${job.goodsDetails}",
+                            fontWeight: 600,
+                            fontSize: titleFontSize,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
 
   Widget _buildJobList() {
-    // var jobs = controller.filteredJobs;
-    // if (controller.isSearchMode) {
-    //   if (controller.selectedJobType == SendJobTypes.customer) {
-    //     var jobs = controller.filteredJobs
-    //         .toJobDetailWrapper(JobDetailGroupBy.customer);
-    //     return ListView.builder(
-    //         controller: _scrollController,
-    //         padding: FxSpacing.top(295),
-    //         itemCount: controller.jobs.length,
-    //         itemBuilder: (context, index) {
-    //           return Column(
-    //             children: [
-    //               _buildCustomerList(jobs[index]),
-    //               FxSpacing.height(10)
-    //             ],
-    //           );
-    //         });
-    //   } else if (controller.selectedJobType == SendJobTypes.receiver) {
-    //     var jobs = controller.filteredJobs
-    //         .toJobDetailWrapper(JobDetailGroupBy.receiver);
-    //   } else if (controller.selectedJobType == SendJobTypes.group_barcode) {
-    //     var jobs = controller.filteredJobs
-    //         .toJobDetailWrapper(JobDetailGroupBy.barcode);
-    //   }
-    // }
-    if (controller.selectedJobType == SendJobTypes.customer ||
-        controller.selectedJobType == SendJobTypes.receiver) {
-      return ListView.builder(
-          controller: _scrollController,
-          padding: FxSpacing.top(260),
-          itemCount: controller.filteredJobs.length,
-          itemBuilder: (context, index) {
-            return Column(
-              children: [
-                _buildJobDetailWrapperItem(controller.filteredJobs[index]),
-                FxSpacing.height(10)
-              ],
-            );
-          });
-    } else if (controller.selectedJobType == SendJobTypes.group_barcode) {
-      return GroupedListView<JobDetail, String>(
-        padding: FxSpacing.top(260),
-        controller: _scrollController,
-        elements: controller.filteredJobs,
-        groupBy: (element) => element.barcode,
-        groupSeparatorBuilder: (String groupByValue) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              FxContainer(
-                color: SLColor.LIGHTBLUE2,
-                child: FxText('# $groupByValue',
-                    color: Colors.white, fontSize: 21),
-              ),
-              FxSpacing.height(20)
-            ],
-          );
-        },
-        itemBuilder: (context, element) {
-          return Column(
-            children: [
-              _buildJobDetailWrapperItem(element),
-              FxSpacing.height(20)
-            ],
-          );
-        },
-        // itemComparator: (item1, item2) =>
-        //     item1['name'].compareTo(item2['name']), // optional
-        useStickyGroupSeparators: false, // optional
-        floatingHeader: true, // optional
-        order: GroupedListOrder.ASC, // optional
-      );
-    }
-    return ListView.builder(
-        controller: _scrollController,
-        padding: FxSpacing.top(260),
-        itemCount: controller.filteredJobs.length,
-        itemBuilder: (context, index) {
-          return Column(
-            children: [
-              _buildJobDetailWrapperItem(controller.filteredJobs[index]),
-              FxSpacing.height(10)
-            ],
-          );
-        });
-    // if (controller.toggleSendJobButton) {
-    //   var jobs = controller.jobs.toJobDetailList();
-    //   return ListView.builder(
-    //       controller: _scrollController,
-    //       padding: FxSpacing.top(295),
-    //       itemCount: controller.jobs.length,
-    //       itemBuilder: (context, index) {
-    //         return Column(
-    //           children: [
-    //             _buildJobDetailWrapperItem(jobs[index], false),
-    //             FxSpacing.height(10)
-    //           ],
-    //         );
-    //       });
-    // }
+    if (controller.selectedJobType == SendJobTypes.group_barcode) {
+      if (controller.jobs.length == 0) {
+        return Center(
+          child: FxText.headlineMedium("ไม่พบข้อมูล", xMuted: true),
+        );
+      }
 
-    // return ListView.builder(
-    //     controller: _scrollController,
-    //     padding: FxSpacing.top(295),
-    //     itemCount: controller.jobs.length,
-    //     itemBuilder: (context, index) {
-    //       return Column(
-    //         children: [
-    //           _buildJobDetailWrapperItem(controller.jobs[index].items[0],
-    //               controller.jobs[index].items.length > 1),
-    //           FxSpacing.height(10)
-    //         ],
-    //       );
-    //     });
+      var listWidget = null;
+      if (controller.selectedJobs.length > 0) {
+        listWidget = ListView.builder(
+            physics: BouncingScrollPhysics(),
+            controller: _scrollController,
+            padding: FxSpacing.only(
+                top: 20,
+                bottom: controller.selectedJobIds.length > 0 ? 300 : 80),
+            itemCount: controller.selectedJobs.length,
+            itemBuilder: (context, index) {
+              return Column(
+                children: [
+                  _buildJobDetailWrapperItem(controller.selectedJobs[index]),
+                  Divider(height: 10)
+                ],
+              );
+            });
+      } else {
+        listWidget = ListView.builder(
+            physics: BouncingScrollPhysics(),
+            controller: _scrollController,
+            padding: FxSpacing.only(
+                top: 20,
+                bottom: controller.selectedJobIds.length > 0 ? 200 : 80),
+            itemCount: controller.filteredJobs.length,
+            itemBuilder: (context, index) {
+              return Column(
+                children: [
+                  _buildJobDetailWrapperItem(controller.filteredJobs[index]),
+                  Divider(height: 10)
+                ],
+              );
+            });
+      }
+      return ShaderMask(
+          shaderCallback: (Rect rect) {
+            return LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.purple,
+                Colors.transparent,
+                Colors.transparent,
+                Colors.purple
+              ],
+              stops: [
+                0.0,
+                0.1,
+                0.9,
+                1.0
+              ], // 10% purple, 80% transparent, 10% purple
+            ).createShader(rect);
+          },
+          blendMode: BlendMode.dstOut,
+          child: listWidget);
+    }
+    return Container();
   }
 
   Widget _buildBody() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if ((_scrollController.hasClients)) {
-        _scrollController.addListener(() {
-          _appBarAnimationController.animateTo(_scrollController.offset / 130);
-        });
-        _scrollController.position.isScrollingNotifier.addListener(() {
-          if (!_scrollController.position.isScrollingNotifier.value) {
-            if (_scrollController.offset > 30 &&
-                _scrollController.offset < 130) {
-              _appBarAnimationController.animateTo(1,
-                  duration: Duration(milliseconds: 300), curve: Curves.ease);
-              _scrollController.animateTo(130,
-                  duration: Duration(milliseconds: 300), curve: Curves.ease);
-            } else {
-              if (_scrollController.offset < 30) {
-                _appBarAnimationController.animateTo(0,
-                    duration: Duration(milliseconds: 300), curve: Curves.ease);
-                _scrollController.animateTo(0,
-                    duration: Duration(milliseconds: 300), curve: Curves.ease);
-              }
-            }
-          } else {
-            print('scroll is started');
-          }
-        });
-      }
-    });
+    var color = controller.getOrderStatusColor(controller.selectedJobStatus);
 
-    return Stack(children: [
-      (controller.showLoading)
-          ? SingleChildScrollView(
-              padding: FxSpacing.top(290),
-              child: LoadingEffect.getSearchLoadingScreen(
-                context,
-              ))
-          : Container(color: Colors.grey.shade100, child: _buildJobList()),
-      AnimatedBuilder(
-          animation: _appBarAnimationController,
-          builder: (context, child) {
-            return Column(
-              children: [
-                Container(
-                  color: Colors.grey.shade100,
-                  padding: FxSpacing.only(
-                      top: 220 - _appBarAnimation.value,
-                      left: 20,
-                      right: 20,
-                      bottom: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      FxText(
-                        'งานทั้งหมด (${controller.filteredJobs.length})',
-                        fontWeight: 700,
-                        fontSize: 16,
-                      ),
-                      (controller.toggleSendJobButton)
-                          ? FxContainer.bordered(
-                              color: Colors.green.shade100,
-                              paddingAll: 4,
-                              child: FxText(
-                                'งานที่เลือก ${controller.selectedJobIds.length} งาน',
-                                fontWeight: 700,
-                                fontSize: 16,
-                                color: Colors.green,
-                              ),
-                            )
-                          : Container(),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          }),
-      Container(
-        child: AnimatedBuilder(
-          animation: _appBarAnimationController,
-          builder: (context, child) {
-            return FxContainer(
-                padding: FxSpacing.all(10),
+    return Container(
+      color: Colors.grey.shade200,
+      child: Stack(children: [
+        Transform.scale(
+          scale: 1.5,
+          child: Container(
+            height: 200,
+            decoration: BoxDecoration(
                 borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20)),
-                color: SLColor.LIGHTBLUE2,
-                child: _appBar(),
-                height: 210 - _appBarAnimation.value);
-          },
-        ),
-      )
-    ]);
-  }
-
-  Widget _buildSearchWidget() {
-    if (controller.selectedJobType == SendJobTypes.group_barcode) {
-      var jobs = controller.jobs.toJobDetailWrapper(JobDetailGroupBy.barcode);
-      return Card(
-        margin: FxSpacing.zero,
-        child: TypeAheadField(
-          suggestionsBoxController: _suggestBoxController,
-          hideOnEmpty: true,
-          keepSuggestionsOnSuggestionSelected: true,
-          hideKeyboard: true,
-          textFieldConfiguration: TextFieldConfiguration(
-            style: TextStyle(fontFamily: 'Kanit'),
-            controller: _customerSearchController,
-            decoration: InputDecoration(
-                contentPadding: FxSpacing.only(left: 20),
-                labelStyle: TextStyle(fontFamily: 'Kanit'),
-                hintStyle: TextStyle(fontFamily: 'Kanit'),
-                counterStyle: TextStyle(fontFamily: 'Kanit'),
-                suffixIcon: FxContainer.transparent(
-                  padding: FxSpacing.symmetric(vertical: 10, horizontal: 5),
-                  onTap: () async {
-                    controller.selectedJobIds = [];
-                    _suggestBoxController.close();
-                  },
-                  child: Icon(FontAwesomeIcons.xmark,
-                      color: customTheme.medicarePrimary, size: 20),
-                ),
-                border: OutlineInputBorder(),
-                hintText: 'ค้นหาบาร์โค้ด'),
+                    bottomLeft: Radius.circular(200),
+                    bottomRight: Radius.circular(200)),
+                gradient: LinearGradient(
+                    colors: [Colors.blue.shade600, Colors.blue.shade200])),
           ),
-          suggestionsCallback: (pattern) {
-            return jobs.where((data) =>
-                data.title.toLowerCase().contains(pattern.toLowerCase()));
+        ),
+        GestureDetector(
+          onPanUpdate: (details) {
+            // isPanning = true;
+
+            // var top = topPointCard + details.delta.dy;
+            // if (top < 60 || top > 200) return;
+
+            // setState(() {
+            //   topPointCard = top;
+            // });
           },
-          noItemsFoundBuilder: (context) {
-            return Container(
-                color: Colors.white, child: FxText("ไม่พบรายชื่อลูกค้า"));
+          onPanEnd: (details) {
+            // isPanning = false;
+            // if (topPointCard > 100) {
+            //   setState(() {
+            //     topPointCard = 150;
+            //   });
+            // } else {
+            //   setState(() {
+            //     topPointCard = 70;
+            //   });
+            // }
           },
-          itemBuilder: (context, JobDetailWrapper suggestion) {
-            return StatefulBuilder(builder: (context, setState) {
-              return Container(
+          child: AnimatedContainer(
+              duration: isPanning
+                  ? Duration(seconds: 0)
+                  : Duration(milliseconds: 300),
+              curve: Curves.fastOutSlowIn,
+              padding: FxSpacing.top(30),
+              decoration: BoxDecoration(
                 color: Colors.white,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(40),
+                    topRight: Radius.circular(40)),
+              ),
+              margin: FxSpacing.only(top: topPointCard, left: 10, right: 10),
+              child: Stack(
+                children: [
+                  FxContainer.bordered(
+                    margin: FxSpacing.left(
+                        MediaQuery.of(context).size.width / 2 - 60),
+                    width: 100,
+                    height: 4,
+                    color: Colors.grey.shade300,
+                  ),
+                  (controller.showLoading)
+                      ? SingleChildScrollView(
+                          padding: FxSpacing.top(60),
+                          child: LoadingEffect.getSearchLoadingScreen(
+                            context,
+                          ))
+                      : Container(
+                          margin: FxSpacing.top(10), child: _buildJobList()),
+                  // Positioned(
+                  //     right: 20,
+                  //     child: Icon(
+                  //       Icons.search,
+                  //       color: Colors.blue,
+                  //     )),
+                  Positioned(
+                      right: 20,
+                      child: FxContainer.transparent(
+                        onTap: () {
+                          controller.reloadAllJobs(forceReload: true);
+                        },
+                        child: Icon(
+                          Icons.refresh,
+                          color: Colors.blue,
+                        ),
+                      )),
+                ],
+              )),
+        ),
+        Container(
+          // height: 160,
+          child: Column(
+            children: [
+              Container(
+                padding: FxSpacing.xy(10, 10),
+                // margin:
+                //     FxSpacing.only(top: 10, left: 10, right: 10, bottom: 10),
+                // color: SLColor.LIGHTBLUE2.withOpacity(0.7),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        _globalWidget.menuButton(),
+                        FxSpacing.width(10),
+                        Expanded(child: Container()),
+                        GestureDetector(
+                          onTap: () {
+                            _selectSizeSheet();
+                          },
+                          child: Container(
+                            padding: FxSpacing.all(10),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                color: color),
+                            child: Row(
+                              children: [
+                                (controller.selectedJobStatus ==
+                                        JobStatus.SENDING)
+                                    ? Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 10),
+                                        child: Icon(
+                                          FontAwesomeIcons.boxesPacking,
+                                          size: 14,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : Container(),
+                                (controller.selectedJobStatus == JobStatus.SENT)
+                                    ? Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 15),
+                                        child: Icon(FontAwesomeIcons.paperPlane,
+                                            size: 14, color: Colors.white),
+                                      )
+                                    : Container(),
+                                (controller.selectedJobStatus ==
+                                        JobStatus.REJECT_SENDING)
+                                    ? Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 10),
+                                        child: Icon(FontAwesomeIcons.ban,
+                                            size: 14, color: Colors.white),
+                                      )
+                                    : Container(),
+                                FxText.titleSmall(
+                                  '${controller.getOrderStatusTitle(controller.selectedJobStatus)} (${controller.filteredJobs.length})',
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                )
+                              ],
+                            ),
+                            // paddingAll: 8,
+                            // color: controller.getOrderStatusColor(
+                            //     controller.selectedJobStatus)
+                          ),
+                        ),
+                        FxSpacing.width(10),
+                        (controller.selectedJobStatus == JobStatus.SENDING)
+                            ? Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      controller.selectionJobTypeChanged(
+                                          SelectionJobType.receive_job);
+                                    },
+                                    child: AnimatedContainer(
+                                      decoration: BoxDecoration(
+                                          color: (controller.selectionJobType ==
+                                                  SelectionJobType.receive_job)
+                                              ? Colors.green.shade300
+                                              : Colors.blue.shade300,
+                                          // border: Border(
+                                          //   bottom: BorderSide(width: 1, color: Colors.green)
+                                          // ),
+                                          borderRadius: BorderRadius.only(
+                                              topLeft: Radius.circular(30),
+                                              bottomLeft: Radius.circular(30))),
+                                      padding: FxSpacing.all(10),
+                                      duration: Duration(milliseconds: 300),
+                                      child: Row(children: [
+                                        // Icon(
+                                        //   FontAwesomeIcons.boxesPacking,
+                                        //   color: Colors.white,
+                                        // ),
+                                        // FxSpacing.width(15),
+                                        FxText.titleSmall(
+                                          "รับงาน",
+                                          fontSize: 12,
+                                          color: Colors.white,
+                                        )
+                                      ]),
+                                    ),
+                                  ),
+                                  // VerticalDivider(width: 2,thickness: 2,color: Colors.white,),
+                                  GestureDetector(
+                                    onTap: () {
+                                      controller.selectionJobTypeChanged(
+                                          SelectionJobType.send_job);
+                                    },
+                                    child: AnimatedContainer(
+                                      decoration: BoxDecoration(
+                                          color: (controller.selectionJobType ==
+                                                  SelectionJobType.send_job)
+                                              ? Colors.green.shade300
+                                              : Colors.blue.shade300,
+                                          borderRadius: BorderRadius.only(
+                                              topRight: Radius.circular(30),
+                                              bottomRight:
+                                                  Radius.circular(30))),
+                                      padding: FxSpacing.all(10),
+                                      duration: Duration(milliseconds: 300),
+                                      child: Row(children: [
+                                        // Icon(
+                                        //   FontAwesomeIcons.paperPlane,
+                                        //   color: Colors.white,
+                                        // ),
+                                        // FxSpacing.width(15),
+                                        FxText.titleSmall(
+                                          "ส่งงาน",
+                                          fontSize: 12,
+                                          color: Colors.white,
+                                        )
+                                      ]),
+                                    ),
+                                  )
+                                ],
+                              )
+                            : Container(),
+                      ],
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+        AnimatedPositioned(
+          duration: Duration(milliseconds: 500),
+          curve: Curves.ease,
+          width: MediaQuery.of(context).size.width,
+          height: 150,
+          bottom: controller.selectedJobIds.length > 0 ? 0 : -150,
+          child: ClipRRect(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                decoration: BoxDecoration(
+                    // color: Colors.black.withAlpha(80),
+                    gradient: LinearGradient(colors: [
+                      Colors.blue.shade500.withAlpha(150),
+                      Colors.blue.shade300.withAlpha(150)
+                    ]),
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20))),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    ListTile(
-                        title: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: suggestion.isChecked,
-                              onChanged: (value) {},
+                    Padding(
+                      padding: const EdgeInsets.all(15.0),
+                      child: Stack(
+                        children: [
+                          FxText(
+                            "รูปแบบการส่งงาน / ปิดงาน",
+                            color: Colors.white,
+                          ),
+                          Positioned(
+                            right: 0,
+                            child: FxContainer.transparent(
+                              onTap: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) =>
+                                        clearSelectionDialog(context));
+                              },
+                              paddingAll: 0,
+                              child: FxText(
+                                "เคลียร์ (${controller.selectedJobIds.length})",
+                                color: Colors.red,
+                              ),
                             ),
-                            FxText('# ${suggestion.title}',
-                                fontSize: 21, color: Colors.blue),
-                          ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FxContainer.transparent(
+                            onTap: () {
+                              _sendJobCommand(SendJobType.NORMAL);
+                            },
+                            borderRadiusAll: 0,
+                            marginAll: 10,
+                            bordered: false,
+                            color: Colors.green,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  FontAwesomeIcons.check,
+                                  color: Colors.white,
+                                ),
+                                FxSpacing.width(10),
+                                FxText.titleSmall(
+                                  "แบบปกติ",
+                                  color: Colors.white,
+                                )
+                              ],
+                            ),
+                          ),
                         ),
-                        FxText(suggestion.items[0].receiverAddress,
-                            fontSize: 18, muted: true)
+                        Expanded(
+                          child: FxContainer.transparent(
+                            onTap: () {
+                              _sendJobCommand(SendJobType.REMARK);
+                            },
+                            borderRadiusAll: 0,
+                            marginAll: 10,
+                            bordered: false,
+                            color: Colors.amber,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  FontAwesomeIcons.triangleExclamation,
+                                  color: Colors.white,
+                                ),
+                                FxSpacing.width(10),
+                                FxText.titleSmall(
+                                  "แบบมีหมายเหตุ",
+                                  color: Colors.white,
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
-                    )),
-                    Divider(height: 2)
+                    )
                   ],
                 ),
-              );
-            });
-          },
-          onSuggestionSelected: (JobDetailWrapper suggestion) {
-            if (!controller.selectedGroupBarcode.contains(suggestion)) {
-              controller.selectedGroupBarcode.add(suggestion);
-            } else {
-              controller.selectedGroupBarcode.remove(suggestion);
-            }
-
-            controller.filteredJobs = controller.jobs.where((element) {
-              var foundItem = controller.selectedGroupBarcode
-                  .where((element2) => element.barcode == element2.title);
-              return foundItem.length > 0;
-            }).toList();
-
-            setState(() {
-              suggestion.isChecked = suggestion.isChecked;
-            });
-          },
-        ),
-      );
-    } else if (controller.selectedJobType == SendJobTypes.customer) {
-      var customers =
-          controller.jobs.toJobDetailWrapper(JobDetailGroupBy.customer);
-      return Card(
-        margin: FxSpacing.zero,
-        child: TypeAheadField(
-          textFieldConfiguration: TextFieldConfiguration(
-            style: TextStyle(fontFamily: 'Kanit'),
-            controller: _customerSearchController,
-            decoration: InputDecoration(
-                contentPadding: FxSpacing.only(left: 20),
-                labelStyle: TextStyle(fontFamily: 'Kanit'),
-                hintStyle: TextStyle(fontFamily: 'Kanit'),
-                counterStyle: TextStyle(fontFamily: 'Kanit'),
-                suffixIcon: FxContainer.transparent(
-                  padding: FxSpacing.symmetric(vertical: 10, horizontal: 5),
-                  onTap: () async {
-                    _customerSearchController.clear();
-                    controller.selectedJobIds = [];
-                    controller.searchJobs("",controller.selectedJobStatus);
-                  },
-                  child: Icon(FontAwesomeIcons.xmark,
-                      color: customTheme.medicarePrimary, size: 20),
-                ),
-                border: OutlineInputBorder(),
-                hintText: 'ค้นหาลูกค้า'),
+              ),
+            ),
           ),
-          suggestionsCallback: (pattern) {
-            return customers.where((data) =>
-                data.title.toLowerCase().contains(pattern.toLowerCase()));
-          },
-          noItemsFoundBuilder: (context) {
-            return Container(
-                color: Colors.white, child: FxText("ไม่พบรายชื่อลูกค้า"));
-          },
-          itemBuilder: (context, JobDetailWrapper suggestion) {
-            return Container(
-              color: Colors.white,
-              child: ListTile(title: FxText(suggestion.title)),
-            );
-          },
-          onSuggestionSelected: (JobDetailWrapper suggestion) {
-            _customerSearchController.text = suggestion.title;
-            controller.searchJobs(_customerSearchController.text,controller.selectedJobStatus);
-          },
         ),
-      );
-    } else if (controller.selectedJobType == SendJobTypes.receiver) {
-      var receivers =
-          controller.jobs.toJobDetailWrapper(JobDetailGroupBy.receiver);
-      return Card(
-        margin: FxSpacing.zero,
-        child: TypeAheadField(
-          textFieldConfiguration: TextFieldConfiguration(
-            style: TextStyle(fontFamily: 'Kanit'),
-            controller: _customerSearchController,
-            decoration: InputDecoration(
-                contentPadding: FxSpacing.only(left: 20),
-                labelStyle: TextStyle(fontFamily: 'Kanit'),
-                hintStyle: TextStyle(fontFamily: 'Kanit'),
-                counterStyle: TextStyle(fontFamily: 'Kanit'),
-                suffixIcon: FxContainer.transparent(
-                  padding: FxSpacing.symmetric(vertical: 10, horizontal: 5),
-                  onTap: () async {
-                    _customerSearchController.clear();
-                    controller.selectedJobIds = [];
-                    controller.searchJobs("",controller.selectedJobStatus);
-                  },
-                  child: Icon(FontAwesomeIcons.xmark,
-                      color: customTheme.medicarePrimary, size: 20),
+        (controller.selectedJobStatus == JobStatus.SENDING)
+            ? AnimatedPositioned(
+                // top: MediaQuery.of(context).size.height / 2 - 75,
+                bottom: controller.selectedJobIds.length > 0 ? 180 : 75,
+                right: 20,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      width: 50,
+                      height: 150,
+                      decoration: BoxDecoration(
+                          // color: Colors.blue.withAlpha(150),
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(10),
+                              bottomLeft: Radius.circular(10)),
+                          gradient: LinearGradient(colors: [
+                            Colors.blue.shade500.withAlpha(180),
+                            Colors.blue.shade300.withAlpha(180)
+                          ])),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          FxContainer.bordered(
+                              onTap: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) =>
+                                        inputBarcodeDialog(context));
+                              },
+                              paddingAll: 10,
+                              marginAll: 0,
+                              bordered: false,
+                              color: Colors.blue,
+                              child: Icon(
+                                FontAwesomeIcons.barcode,
+                                color: Colors.white,
+                                size: 20,
+                              )),
+                          FxSpacing.height(10),
+                          FxContainer.bordered(
+                              onTap: () async {
+                                var value =
+                                    await FlutterBarcodeScanner.scanBarcode(
+                                        "#ff6666",
+                                        "Cancel",
+                                        true,
+                                        ScanMode.BARCODE);
+
+                                if (value != "-1") {
+                                  if (controller.selectionJobType ==
+                                      SelectionJobType.receive_job) {
+                                    var response = await controller
+                                        .appController.api
+                                        .updateJobStatusByBarCode(value);
+                                    if (response != null) {
+                                      if (response["isSuccess"]) {
+                                        controller.reloadAllJobs(
+                                            forceReload: true);
+                                      } else {
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return _globalWidget.errorDialog(
+                                                  context, response["message"]);
+                                            });
+                                      }
+                                    }
+                                  } else {
+                                    var errorMessage = await controller
+                                        .searchJobsForSend(value);
+                                    if (errorMessage.isNotEmpty) {
+                                      showDialog(
+                                          context: context,
+                                          builder: (context) =>
+                                              _globalWidget.errorDialog(
+                                                  context, errorMessage));
+                                    }
+                                  }
+                                } else {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return _globalWidget.errorDialog(
+                                            context, "สแกนบาร์โค้ดไม่สำเร็จ ",
+                                            title2: '$value');
+                                      });
+                                }
+                              },
+                              paddingAll: 10,
+                              bordered: false,
+                              color: Colors.blue,
+                              child: Icon(
+                                FontAwesomeIcons.camera,
+                                color: Colors.white,
+                                size: 20,
+                              ))
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                border: OutlineInputBorder(),
-                hintText: 'ค้นหาลูกค้าปลายทาง'),
-          ),
-          suggestionsCallback: (pattern) {
-            return receivers.where((data) =>
-                data.title.toLowerCase().contains(pattern.toLowerCase()));
-          },
-          noItemsFoundBuilder: (context) {
-            return Container(
-                color: Colors.white, child: FxText("ไม่พบรายชื่อลูกค้า"));
-          },
-          itemBuilder: (context, JobDetailWrapper suggestion) {
-            return Container(
-              color: Colors.white,
-              child: ListTile(title: FxText(suggestion.title)),
-            );
-          },
-          onSuggestionSelected: (JobDetailWrapper suggestion) {
-            _customerSearchController.text = suggestion.title;
-            controller.searchJobs(_customerSearchController.text,controller.selectedJobStatus);
-          },
-        ),
-      );
-    }
+                curve: Curves.easeInOutSine,
+                duration: Duration(milliseconds: 400))
+            : Container()
+      ]),
+    );
+  }
+
+  Widget _buildSearchWidget() {
     return FxTextField(
       controller: _searchTextController,
       contentPadding: EdgeInsets.zero,
@@ -1164,7 +1898,7 @@ class _HomeScreenState extends SLState<HomeScreen>
         size: 20,
       ),
       onChanged: (value) {
-        controller.searchJobs(value,controller.selectedJobStatus);
+        controller.searchJobs(value, controller.selectedJobStatus);
       },
       suffixIcon: Row(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -1177,7 +1911,8 @@ class _HomeScreenState extends SLState<HomeScreen>
                   onTap: () async {
                     FocusScope.of(context).unfocus();
                     _searchTextController.clear();
-                    controller.searchJobs(_searchTextController.text,controller.selectedJobStatus);
+                    controller.searchJobs(_searchTextController.text,
+                        controller.selectedJobStatus);
                     //controller.reloadAllJobs();
                   },
                   child: Icon(FontAwesomeIcons.xmark,
@@ -1191,7 +1926,8 @@ class _HomeScreenState extends SLState<HomeScreen>
                     await FlutterBarcodeScanner.scanBarcode(
                         "#ff6666", "Cancel", true, ScanMode.BARCODE);
                 //print(barcodeScanRes);
-                controller.searchJobs(_searchTextController.text,controller.selectedJobStatus);
+                controller.searchJobs(
+                    _searchTextController.text, controller.selectedJobStatus);
               } on PlatformException {
                 // barcodeScanRes =
                 //     'Failed to get platform version.';
@@ -1205,182 +1941,60 @@ class _HomeScreenState extends SLState<HomeScreen>
     );
   }
 
-  Widget _appBar() {
-    return Stack(
-      children: [
-        AnimatedBuilder(
-          animation: _appBarAnimationController,
-          builder: (context, child) {
-            return SingleChildScrollView(
-              physics: NeverScrollableScrollPhysics(),
-              // padding: EdgeInsets.only(top: 50),
-              child: Column(
-                children: [
-                  // FxSpacing.height(20),
-                  Column(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          showModalBottomSheet<void>(
-                            isScrollControlled: true,
-                            context: context,
-                            builder: (BuildContext context) {
-                              return showPopup(controller);
-                              //return Container();
-                            },
-                          );
-                        },
-                        child: Opacity(
-                          opacity: 1.0 - _appBarAnimation.value / 130,
-                          child: Container(
-                            // margin: EdgeInsets.only(top: 10),
-                            width: MediaQuery.of(context).size.width,
-                            height: 60,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                FxText.bodySmall(
-                                  'สายส่ง',
-                                  color: Colors.white,
-                                  xMuted: false,
-                                  fontSize: 16,
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.local_shipping,
-                                      color: Colors.white,
-                                      size: 21,
-                                    ),
-                                    FxSpacing.width(4),
-                                    FxText.bodySmall(
-                                      (appController.selectedRouteLine != null)
-                                          ? appController
-                                              .selectedRouteLine!.routename
-                                          : "",
-                                      fontSize: 16,
-                                      color: Colors.white,
-                                      fontWeight: 600,
-                                    ),
-                                    FxSpacing.width(4),
-                                    Icon(
-                                      Icons.arrow_drop_down,
-                                      color: Colors.white,
-                                      size: 21,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Opacity(
-                        opacity: 1.0 - _appBarAnimation.value / 130,
-                        child: Container(
-                          color: Colors.transparent,
-                          child: Padding(
-                              padding: FxSpacing.horizontal(10),
-                              child: _buildSearchWidget()),
-                        ),
-                      ),
-                      Transform.translate(
-                        offset: Offset(0, -_appBarAnimation.value),
-                        child: Container(
-                          padding: FxSpacing.only(top: 5),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              FxContainer.transparent(
-                                child: Column(children: [
-                                  Icon(Icons.qr_code_scanner,
-                                      color: Colors.white, size: 40),
-                                  FxText.titleSmall(
-                                    "สแกนรับงาน",
-                                    color: Colors.white,
-                                  )
-                                ]),
-                              ),
-                              FxContainer.transparent(
-                                onTap: () {
-                                  _searchTextController.text = "";
-                                  resetAppBar();
-                                  controller.reloadAllJobs(forceReload: true);
-                                },
-                                child: Column(children: [
-                                  Icon(Icons.sync,
-                                      color: Colors.white, size: 40),
-                                  FxText.titleSmall(
-                                    "โหลดงาน",
-                                    color: Colors.white,
-                                  )
-                                ]),
-                              ),
-                              FxContainer.transparent(
-                                onTap: () {
-                                  _selectSizeSheet();
-                                },
-                                child: Column(children: [
-                                  Icon(Icons.tune,
-                                      color: Colors.white, size: 40),
-                                  FxText.titleSmall(
-                                    "Filters",
-                                    color: Colors.white,
-                                  )
-                                ]),
-                              ),
-                              AbsorbPointer(
-                                absorbing: (controller.selectedJobStatus == JobStatus.SENT),
-                                child: Opacity(
-                                  opacity: (controller.selectedJobStatus == JobStatus.SENT) ? 0.5 : 1.0,
-                                  child: FxContainer.transparent(
-                                    onTap: () {
-                                      if (controller.toggleSendJobButton) {
-                                        _showSendJobByConfirmDialog();
-                                      } else {
-                                        _showSendJobByDialog();
-                                      }
-                                    },
-                                    child: Stack(
-                                      children: [
-                                        Column(children: [
-                                          Icon(
-                                              (controller.toggleSendJobButton)
-                                                  ? FontAwesomeIcons.check
-                                                  : Icons.upload,
-                                              color:
-                                                  (controller.toggleSendJobButton)
-                                                      ? Colors.green.shade300
-                                                      : Colors.white,
-                                              size: 40),
-                                          FxText.titleSmall(
-                                            (controller.toggleSendJobButton)
-                                                ? "ยืนยัน"
-                                                : "ส่งงาน",
-                                            color: (controller.toggleSendJobButton)
-                                                ? Colors.green.shade300
-                                                : Colors.white,
-                                          )
-                                        ])
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        )
-      ],
-    );
+  void _sendJobCommand(int jobType) {
+    if (controller.selectedJobIds.length == 0) {
+      showDialog(
+          context: context, builder: (context) => showSendJobRequired(context));
+    } else {
+      Navigator.of(NavigationService.navigatorKey.currentState!.context)
+          .pushNamed("/send_job", arguments: {
+        "jobType": jobType,
+        "jobs": controller.selectedJobIds
+      });
+    }
+  }
+
+  List<Widget> _buildQuickActionMenuList(setState) {
+    List<Widget> list = [
+      Column(
+        children: [
+          FxContainer.roundBordered(
+              onTap: () {
+                _sendJobCommand(SendJobType.NORMAL);
+              },
+              color: Colors.white,
+              child: Icon(FontAwesomeIcons.upload, color: Colors.green)),
+          FxSpacing.height(10),
+          FxText.titleMedium("ส่งงาน", color: Colors.white)
+        ],
+      ),
+      Column(
+        children: [
+          FxContainer.roundBordered(
+              onTap: () {
+                _sendJobCommand(SendJobType.REMARK);
+              },
+              color: Colors.white,
+              child: Icon(FontAwesomeIcons.triangleExclamation,
+                  color: Colors.orange)),
+          FxSpacing.height(10),
+          FxText.titleMedium("หมายเหตุ", color: Colors.white)
+        ],
+      ),
+      Column(
+        children: [
+          FxContainer.roundBordered(
+              onTap: () {
+                _sendJobCommand(SendJobType.REJECT);
+              },
+              color: Colors.white,
+              child: Icon(FontAwesomeIcons.ban, color: Colors.red)),
+          FxSpacing.height(10),
+          FxText.titleMedium("ยกเลิกงาน", color: Colors.white)
+        ],
+      ),
+    ];
+    return list;
   }
 
   List<Widget> _buildFilterCategoryList(setState) {
@@ -1437,10 +2051,6 @@ class _HomeScreenState extends SLState<HomeScreen>
     );
   }
 
-  void _onDateSelectionChanged(DateRangePickerSelectionChangedArgs args) {
-    var test = args.value;
-  }
-
   void _selectSizeSheet() {
     showModalBottomSheet(
         isScrollControlled: true,
@@ -1450,6 +2060,7 @@ class _HomeScreenState extends SLState<HomeScreen>
             builder: (BuildContext context,
                 void Function(void Function()) setState) {
               return FxContainer(
+                color: Colors.white,
                 padding: FxSpacing.top(50),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -1503,7 +2114,6 @@ class _HomeScreenState extends SLState<HomeScreen>
                             padding: FxSpacing.horizontal(14),
                             child: SfDateRangePicker(
                                 controller: _dateRangePickerController,
-                                onSelectionChanged: _onDateSelectionChanged,
                                 selectionMode:
                                     DateRangePickerSelectionMode.range,
                                 initialSelectedRange: PickerDateRange(
@@ -1511,57 +2121,6 @@ class _HomeScreenState extends SLState<HomeScreen>
                                   appController.toDate,
                                 )),
                           ),
-                          // Container(
-                          //   child: GridView.count(
-                          //     //scrollDirection: Axis.horizontal,
-                          //     //child: Row(
-                          //     physics: ClampingScrollPhysics(),
-                          //     crossAxisCount: 2,
-                          //     children: [] ,//_buildFilterCategoryList(),
-                          //     //),
-                          //   ),
-                          // ),
-                          // FxSpacing.height(8),
-                          // Padding(
-                          //   padding: FxSpacing.horizontal(14),
-                          //   child: FxText.bodyLarge(
-                          //     'แสดงผลตาราง',
-                          //     fontWeight: 700,
-                          //   ),
-                          // ),
-                          // SingleChildScrollView(
-                          //   scrollDirection: Axis.horizontal,
-                          //   child: Row(children: [
-                          //     FxContainer(
-                          //       child: Row(
-                          //         children: [
-                          //           FxText("แสดงทุกรายการ")
-                          //         ],
-                          //       ),
-                          //     ),
-                          //     FxContainer(
-                          //       child: Row(
-                          //         children: [
-                          //           FxText("จับกลุ่มบาร์โค้ด")
-                          //         ],
-                          //       ),
-                          //     ),
-                          //     FxContainer(
-                          //       child: Row(
-                          //         children: [
-                          //           FxText("ลูกค้าผู้ว่าจ้าง")
-                          //         ],
-                          //       ),
-                          //     ),
-                          //     FxContainer(
-                          //       child: Row(
-                          //         children: [
-                          //           FxText("ลูกค้าปลายทาง")
-                          //         ],
-                          //       ),
-                          //     ),
-                          //   ]),
-                          // ),
                           FxSpacing.height(8),
                           Padding(
                             padding: FxSpacing.horizontal(14),
@@ -1583,96 +2142,6 @@ class _HomeScreenState extends SLState<HomeScreen>
                               children: _buildFilterCategoryList(setState),
                             );
                           }),
-                          // Padding(
-                          //   padding: FxSpacing.horizontal(24),
-                          //   child: FxText.bodyMedium(
-                          //     'Price Range ( ' +
-                          //         '${estateHomeController.selectedRange.start.toInt().toString()} - ' +
-                          //         '${estateHomeController.selectedRange.end.toInt().toString()} )',
-                          //     fontWeight: 700,
-                          //   ),
-                          // ),
-                          // RangeSlider(
-                          //     activeColor: customTheme.estatePrimary,
-                          //     inactiveColor:
-                          //         customTheme.estatePrimary.withAlpha(100),
-                          //     max: 10000,
-                          //     min: 0,
-                          //     values: RangeValues(
-                          //         0, 200), //estateHomeController.selectedRange,
-                          //     onChanged: (RangeValues newRange) {
-                          //       // setState(() =>
-                          //       //     estateHomeController.selectedRange = newRange);
-                          //     }),
-                          // Padding(
-                          //   padding: FxSpacing.horizontal(24),
-                          //   child: FxText.bodyMedium(
-                          //     'Bed Rooms',
-                          //     fontWeight: 700,
-                          //   ),
-                          // ),
-                          // FxSpacing.height(8),
-                          // SingleChildScrollView(
-                          //   padding: FxSpacing.x(24),
-                          //   scrollDirection: Axis.horizontal,
-                          //   child: Row(
-                          //       children:
-                          //           ['Any', '1', '2', '3', '4', '5'].map((element) {
-                          //     return InkWell(
-                          //         onTap: () {
-                          //           setState(() {
-                          //             if (estateHomeController.selectedBedRooms
-                          //                 .contains(element)) {
-                          //               estateHomeController.selectedBedRooms
-                          //                   .remove(element);
-                          //             } else {
-                          //               estateHomeController.selectedBedRooms
-                          //                   .add(element);
-                          //             }
-                          //           });
-                          //         },
-                          //         child: SingleBed(
-                          //           bed: element,
-                          //           selected: estateHomeController.selectedBedRooms
-                          //               .contains(element),
-                          //         ));
-                          //   }).toList()),
-                          // ),
-                          // FxSpacing.height(16),
-                          // Padding(
-                          //   padding: FxSpacing.horizontal(24),
-                          //   child: FxText.bodyMedium(
-                          //     'Bath Rooms',
-                          //     fontWeight: 700,
-                          //   ),
-                          // ),
-                          // FxSpacing.height(8),
-                          // SingleChildScrollView(
-                          //   padding: FxSpacing.x(24),
-                          //   scrollDirection: Axis.horizontal,
-                          //   child: Row(
-                          //       children:
-                          //           ['Any', '1', '2', '3', '4', '5'].map((element) {
-                          //     return InkWell(
-                          //         onTap: () {
-                          //           setState(() {
-                          //             if (estateHomeController.selectedBathRooms
-                          //                 .contains(element)) {
-                          //               estateHomeController.selectedBathRooms
-                          //                   .remove(element);
-                          //             } else {
-                          //               estateHomeController.selectedBathRooms
-                          //                   .add(element);
-                          //             }
-                          //           });
-                          //         },
-                          //         child: SingleBath(
-                          //           bath: element,
-                          //           selected: estateHomeController.selectedBathRooms
-                          //               .contains(element),
-                          //         ));
-                          // }).toList()),
-                          // ),
                           FxSpacing.height(16),
                           Padding(
                             padding: FxSpacing.horizontal(24),
@@ -1686,7 +2155,7 @@ class _HomeScreenState extends SLState<HomeScreen>
                                             .selectedRange!.endDate ??
                                         _dateRangePickerController
                                             .selectedRange!.startDate!);
-                                controller.searchJobs("",controller.selectedJobStatus);
+                                controller.reloadAllJobs();
                                 Navigator.pop(context);
                               },
                               backgroundColor: customTheme.estatePrimary,
@@ -1710,117 +2179,144 @@ class _HomeScreenState extends SLState<HomeScreen>
         });
   }
 
-  void _showSendJobByConfirmDialog() {
+  void _selectQuickAction() {
     showModalBottomSheet(
-        isScrollControlled: false,
         context: context,
         builder: (BuildContext buildContext) {
-          return FxContainer(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  FxContainer.transparent(
-                    child: Center(child: FxText("กรุณายืนยันการทำรายการ ?")),
+          return StatefulBuilder(
+            builder: (BuildContext context,
+                void Function(void Function()) setState) {
+              return BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: FxContainer.transparent(
+                  height: 250,
+                  color: Colors.blue.withOpacity(0.8),
+                  padding: FxSpacing.top(50),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Flexible(
+                        child: ListView(
+                          children: <Widget>[
+                            FxSpacing.height(8),
+                            StatefulBuilder(builder: (context, setState) {
+                              return GridView.count(
+                                padding: EdgeInsets.symmetric(horizontal: 16),
+                                primary: false,
+                                childAspectRatio: 1,
+                                shrinkWrap: true,
+                                crossAxisSpacing: 0,
+                                mainAxisSpacing: 0,
+                                crossAxisCount: 3,
+                                children: _buildQuickActionMenuList(setState),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                      Divider(
+                        height: 1,
+                        color: theme.dividerColor,
+                        thickness: 1,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(FontAwesomeIcons.barcode,
+                                  color: Colors.white),
+                              FxContainer.transparent(
+                                onTap: () async {
+                                  var value =
+                                      await FlutterBarcodeScanner.scanBarcode(
+                                          "#ff6666",
+                                          "Cancel",
+                                          true,
+                                          ScanMode.BARCODE);
+                                  if (value != "-1") {
+                                    var response = await controller
+                                        .appController.api
+                                        .updateJobStatusByBarCode(value);
+                                    if (response != null) {
+                                      if (response["isSuccess"]) {
+                                        Navigator.of(context).pop();
+                                        controller.reloadAllJobs(
+                                            forceReload: true);
+                                      } else {
+                                        if (response["errorCode"] ==
+                                            "JOB-0003") {
+                                          showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return _globalWidget
+                                                    .errorYesNoDialog(context,
+                                                        response["message"],
+                                                        title2:
+                                                            "ท่านต้องการเปลี่ยนสถานะรับงานแทนหรือไม่?",
+                                                        acceptPressed:
+                                                            () async {
+                                                  var response = await controller
+                                                      .appController.api
+                                                      .updateJobStatusByBarCode(
+                                                          value);
+                                                  if (response != null) {
+                                                    if (response["isSuccess"]) {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      controller.reloadAllJobs(
+                                                          forceReload: true);
+                                                    } else {
+                                                      showDialog(
+                                                          context: context,
+                                                          builder: (context) {
+                                                            return _globalWidget
+                                                                .errorDialog(
+                                                                    context,
+                                                                    response[
+                                                                        "message"]);
+                                                          });
+                                                    }
+                                                  }
+                                                });
+                                              });
+                                        } else {
+                                          showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return _globalWidget
+                                                    .errorDialog(context,
+                                                        response["message"]);
+                                              });
+                                        }
+                                      }
+                                    }
+                                  } else {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return _globalWidget.errorDialog(
+                                              context, "สแกนบาร์โค้ดไม่สำเร็จ ",
+                                              title2: '$value');
+                                        });
+                                  }
+                                },
+                                child: Row(children: [
+                                  FxText.titleLarge("สแกนรับงาน",
+                                      color: Colors.white)
+                                ]),
+                              ),
+                            ],
+                          ),
+                        ],
+                      )
+                    ],
                   ),
-                  FxContainer.transparent(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      resetAppBar();
-                      _searchTextController.clear();
-                      _suggestBoxController.close();
-                      _customerSearchController.clear();
-                      controller.toggleSendJobButtonFunc(SendJobTypes.none);
-                    },
-                    child: FxText("ละทิ้งรายการ",
-                        color: Colors.blue, fontSize: 21),
-                  ),
-                  FxContainer.transparent(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: FxText("ยกเลิกงาน", color: Colors.red, fontSize: 21),
-                  ),
-                  FxContainer.transparent(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      Navigator.pushNamed(
-                          NavigationService.navigatorKey.currentContext!,
-                          "/send_job");
-                    },
-                    child: FxText("ส่งงาน", color: Colors.green, fontSize: 21),
-                  )
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         });
-  }
-
-  void _showSendJobByDialog() {
-    showModalBottomSheet(
-        isScrollControlled: false,
-        context: context,
-        builder: (BuildContext buildContext) {
-          return FxContainer(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  FxContainer.transparent(
-                    child: FxText("ส่งงานโดย", fontSize: 21),
-                  ),
-                  FxContainer.transparent(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      controller.toggleSendJobButtonFunc(SendJobTypes.list);
-                    },
-                    child: FxText("เลือกจากรายการ",
-                        fontSize: 21, color: Colors.blue),
-                  ),
-                  Divider(height: 2),
-                  FxContainer.transparent(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      resetAppBar();
-                      controller
-                          .toggleSendJobButtonFunc(SendJobTypes.group_barcode);
-                    },
-                    child: FxText("จับกลุ่มบาร์โค้ด",
-                        fontSize: 21, color: Colors.blue),
-                  ),
-                  Divider(height: 2),
-                  FxContainer.transparent(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      resetAppBar();
-                      controller.filteredJobs = [];
-                      controller.toggleSendJobButtonFunc(SendJobTypes.customer);
-                    },
-                    child: FxText("ลูกค้าผู้ว่าจ้าง",
-                        fontSize: 21, color: Colors.blue),
-                  ),
-                  Divider(height: 2),
-                  FxContainer.transparent(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      resetAppBar();
-                      controller.filteredJobs = [];
-                      controller.toggleSendJobButtonFunc(SendJobTypes.receiver);
-                    },
-                    child: FxText("ลูกค้าปลายทาง",
-                        fontSize: 21, color: Colors.blue),
-                  ),
-                ],
-              ),
-            ),
-          );
-        });
-  }
-
-  void resetAppBar() {
-    _appBarAnimationController.animateTo(0,
-        duration: Duration(microseconds: 600), curve: Curves.ease);
-    _scrollController.animateTo(0,
-        duration: Duration(milliseconds: 300), curve: Curves.ease);
   }
 
   @override
@@ -1834,21 +2330,11 @@ class _HomeScreenState extends SLState<HomeScreen>
               if (controller.isSearchMode) {
                 _searchTextController.clear();
                 FocusScope.of(context).unfocus();
-                resetAppBar();
                 controller.reloadAllJobs();
               }
               return false;
             },
             child: Scaffold(
-              floatingActionButton: FloatingActionButton(
-                backgroundColor: Colors.grey.withOpacity(0.6),
-                child: Icon(
-                  FontAwesomeIcons.arrowUp,
-                ),
-                onPressed: () {
-                  resetAppBar();
-                },
-              ),
               body: Column(
                 children: [
                   Container(
@@ -1860,7 +2346,7 @@ class _HomeScreenState extends SLState<HomeScreen>
                           )
                         : Container(
                             height: 2,
-                            color: SLColor.LIGHTBLUE2,
+                            color: Colors.blue,
                           ),
                   ),
                   Expanded(
@@ -1905,8 +2391,8 @@ class _HomeScreenState extends SLState<HomeScreen>
                         behavior: HitTestBehavior.translucent,
                         onTap: () {
                           Navigator.pop(context);
-                          controller.onSelectedRouteLine(
-                              appController.routelines[index]);
+                          // controller.onSelectedRouteLine(
+                          //     appController.routelines[index]);
                           setState(() {});
                         },
                         child: appController.routelines[index] ==
@@ -1937,37 +2423,6 @@ class _HomeScreenState extends SLState<HomeScreen>
                       ),
                       appController.routelines.length == index + 1
                           ? Container()
-                          // SizedBox(
-                          //     width: double.maxFinite,
-                          //     child: OutlinedButton(
-                          //     onPressed: () {
-                          //       Navigator.push(context, MaterialPageRoute(builder: (context) => SearchAddressPage()));
-                          //     },
-                          //     style: ButtonStyle(
-                          //         overlayColor: MaterialStateProperty.all(Colors.transparent),
-                          //         shape: MaterialStateProperty.all(
-                          //             RoundedRectangleBorder(
-                          //               borderRadius: BorderRadius.circular(5.0),
-                          //             )
-                          //         ),
-                          //         side: MaterialStateProperty.all(
-                          //           BorderSide(
-                          //               color: PRIMARY_COLOR,
-                          //               width: 1.0
-                          //           ),
-                          //         )
-                          //     ),
-                          //     child: Text(
-                          //       'Add New Address',
-                          //       style: TextStyle(
-                          //           color: PRIMARY_COLOR,
-                          //           fontWeight: FontWeight.bold,
-                          //           fontSize: 13
-                          //       ),
-                          //       textAlign: TextAlign.center,
-                          //     )
-                          //   ),
-                          // )
                           : SizedBox.shrink(),
                     ],
                   );

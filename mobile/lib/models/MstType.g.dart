@@ -29,55 +29,57 @@ Map<String, dynamic> _$MstTypeToJson(_MstType instance) => <String, dynamic>{
 // RealmObjectGenerator
 // **************************************************************************
 
-class MstType extends _MstType with RealmEntity, RealmObject {
+class MstType extends _MstType with RealmEntity, RealmObjectBase, RealmObject {
   MstType(
     int mstTypeId,
     int head,
     String description,
     String typeDetail,
   ) {
-    RealmObject.set(this, 'mstTypeId', mstTypeId);
-    RealmObject.set(this, 'head', head);
-    RealmObject.set(this, 'description', description);
-    RealmObject.set(this, 'typeDetail', typeDetail);
+    RealmObjectBase.set(this, 'mstTypeId', mstTypeId);
+    RealmObjectBase.set(this, 'head', head);
+    RealmObjectBase.set(this, 'description', description);
+    RealmObjectBase.set(this, 'typeDetail', typeDetail);
   }
 
   MstType._();
 
   @override
-  int get mstTypeId => RealmObject.get<int>(this, 'mstTypeId') as int;
+  int get mstTypeId => RealmObjectBase.get<int>(this, 'mstTypeId') as int;
   @override
-  set mstTypeId(int value) => RealmObject.set(this, 'mstTypeId', value);
+  set mstTypeId(int value) => RealmObjectBase.set(this, 'mstTypeId', value);
 
   @override
-  int get head => RealmObject.get<int>(this, 'head') as int;
+  int get head => RealmObjectBase.get<int>(this, 'head') as int;
   @override
-  set head(int value) => RealmObject.set(this, 'head', value);
+  set head(int value) => RealmObjectBase.set(this, 'head', value);
 
   @override
   String get description =>
-      RealmObject.get<String>(this, 'description') as String;
+      RealmObjectBase.get<String>(this, 'description') as String;
   @override
-  set description(String value) => RealmObject.set(this, 'description', value);
+  set description(String value) =>
+      RealmObjectBase.set(this, 'description', value);
 
   @override
   String get typeDetail =>
-      RealmObject.get<String>(this, 'typeDetail') as String;
+      RealmObjectBase.get<String>(this, 'typeDetail') as String;
   @override
-  set typeDetail(String value) => RealmObject.set(this, 'typeDetail', value);
+  set typeDetail(String value) =>
+      RealmObjectBase.set(this, 'typeDetail', value);
 
   @override
   Stream<RealmObjectChanges<MstType>> get changes =>
-      RealmObject.getChanges<MstType>(this);
+      RealmObjectBase.getChanges<MstType>(this);
 
   @override
-  MstType freeze() => RealmObject.freezeObject<MstType>(this);
+  MstType freeze() => RealmObjectBase.freezeObject<MstType>(this);
 
   static SchemaObject get schema => _schema ??= _initSchema();
   static SchemaObject? _schema;
   static SchemaObject _initSchema() {
-    RealmObject.registerFactory(MstType._);
-    return const SchemaObject(MstType, 'MstType', [
+    RealmObjectBase.registerFactory(MstType._);
+    return const SchemaObject(ObjectType.realmObject, MstType, 'MstType', [
       SchemaProperty('mstTypeId', RealmPropertyType.int),
       SchemaProperty('head', RealmPropertyType.int),
       SchemaProperty('description', RealmPropertyType.string),

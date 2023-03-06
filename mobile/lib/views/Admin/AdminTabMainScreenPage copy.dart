@@ -1,3 +1,4 @@
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:slpod/controllers/AppController.dart';
@@ -14,14 +15,14 @@ import 'package:slpod/widgets/custom/navigation/custom_bottom_navigation.dart';
 import '../TabScreen/HomeScreen.dart';
 import '../TabScreen/ProfileScreen.dart';
 
-class TabMainScreenPage extends StatefulWidget {
-  const TabMainScreenPage({Key? key}) : super(key: key);
+class AdminTabMainScreenPage1 extends StatefulWidget {
+  const AdminTabMainScreenPage1({Key? key}) : super(key: key);
 
   @override
-  _TabMainScreenPageState createState() => _TabMainScreenPageState();
+  _AdminTabMainScreenPageState createState() => _AdminTabMainScreenPageState();
 }
 
-class _TabMainScreenPageState extends SLState<TabMainScreenPage>
+class _AdminTabMainScreenPageState extends SLState<AdminTabMainScreenPage1>
     with SingleTickerProviderStateMixin {
   late TabMainController controller;
   late ThemeData theme;
@@ -105,41 +106,41 @@ class _TabMainScreenPageState extends SLState<TabMainScreenPage>
             ),
             bottomNavigationBar: CustomBottomNavigation(
               animationDuration: Duration(milliseconds: 350),
-              selectedItemOverlayColor: Colors.blue,
-              backgroundColor: Colors.white,
+              selectedItemOverlayColor: Colors.blue.shade300.withAlpha(200),
+              backgroundColor: Colors.blue,
               selectedIndex: _currentIndex,
-              textStyle: TextStyle(
-                fontSize: 21
-              ),
+              // textStyle: TextStyle(
+              //   fontSize: 12,
+              // ),
               onItemSelected: (index) {
                 setState(() => _currentIndex = index);
                 _pageController!.jumpToPage(index);
               },
               items: <CustomBottomNavigationBarItem>[
                 CustomBottomNavigationBarItem(
-                    title: "หน้าแรก",
-                    icon: Icon(Icons.home_outlined, size: 15),
-                    activeIcon: Icon(Icons.home, size: 15),
+                    title: "Jobs",
+                    icon: Icon(FontAwesomeIcons.businessTime, size: 20),
+                    activeIcon: Icon(FontAwesomeIcons.businessTime, size: 20),
                     activeColor: Colors.white,
-                    inactiveColor: Colors.grey),
+                    inactiveColor: Colors.white),
                 CustomBottomNavigationBarItem(
                     title: "แชท",
                     icon: Icon(MdiIcons.chatOutline, size: 30),
                     activeIcon: Icon(MdiIcons.chat, size: 30),
                     activeColor: Colors.white,
-                    inactiveColor: Colors.grey),                    
+                    inactiveColor: Colors.white),                    
                 CustomBottomNavigationBarItem(
                     title: "แจ้งเตือน",
                     icon: Icon(MdiIcons.bellRingOutline, size: 30),
                     activeIcon: Icon(MdiIcons.bellRing, size: 30),
                     activeColor: Colors.white,
-                    inactiveColor: Colors.grey),
+                    inactiveColor: Colors.white),
                 CustomBottomNavigationBarItem(
                     title: "ตั้งค่า",
                     icon: Icon(MdiIcons.accountOutline, size: 30),
                     activeIcon: Icon(MdiIcons.account, size: 30),
                     activeColor: Colors.white,
-                    inactiveColor: Colors.grey),
+                    inactiveColor: Colors.white),
               ],
             ),
           )),

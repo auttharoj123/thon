@@ -29,8 +29,18 @@ class LoginController extends BaseController {
   void initState() {
     super.initState();
     save = false;
-    emailController = TextEditingController(text: 'test_user');
-    passwordController = TextEditingController(text: '143756');
+    emailController = TextEditingController(text: '');
+    passwordController = TextEditingController(text: '');
+  }
+
+  @override
+  void onReady() async {
+    final prefs = await SharedPreferences.getInstance();
+    var username = prefs.getString("username");
+    var password = prefs.getString("password");
+    emailController.text = username ?? '';
+    passwordController.text = password ?? '';
+    super.onReady();
   }
 
   String? validateEmail(String? text) {
@@ -97,6 +107,8 @@ class LoginController extends BaseController {
         var refreshToken = loginResponse["refresh_token"] as String;
         await prefs.setString('accessToken', token);
         await prefs.setString('refreshToken', refreshToken);
+        await prefs.setString('username', emailController.text);
+        await prefs.setString('password', passwordController.text);
 
         appController.accessToken = token;
         appController.refreshToken = refreshToken;

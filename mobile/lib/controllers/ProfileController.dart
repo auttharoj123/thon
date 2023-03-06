@@ -18,7 +18,7 @@ class ProfileController extends BaseController {
 
   void logout() async {
     await appController.logout();
-    Navigator.pushReplacementNamed(context, '/');
+    //Navigator.pushReplacementNamed(context, '/login');
     //Navigator.pop(context);
   }
 

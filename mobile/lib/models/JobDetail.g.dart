@@ -15,6 +15,7 @@ _JobDetail _$JobDetailFromJson(Map<String, dynamic> json) {
     ..id = json['id'] as int
     ..ordDetailId = json['ord_detail_id'] as int
     ..routelineId = json['routeline_id'] as int
+    ..routeName = json['routename'] as String
     ..nextRoutelineId = json['next_routeline_id'] as int
     ..orderStatus = json['order_status'] as int
     ..directionType = json['direction_type'] as int
@@ -48,7 +49,7 @@ _JobDetail _$JobDetailFromJson(Map<String, dynamic> json) {
     ..imgPath = json['img_path'] as String?
     ..statusFromServer = json['status_from_server'] as int
     ..createdUserFromServer = json['created_user_from_server'] as String
-    ..updatedUserFromServer = json['updated_user_from_server'] as String
+    ..updatedUserFromServer = json['updated_user_from_server'] as String?
     ..updatedDateFromServer = json['updated_date_from_server'] as String;
 }
 
@@ -57,6 +58,7 @@ Map<String, dynamic> _$JobDetailToJson(_JobDetail instance) =>
       'id': instance.id,
       'ord_detail_id': instance.ordDetailId,
       'routeline_id': instance.routelineId,
+      'routename': instance.routeName,
       'next_routeline_id': instance.nextRoutelineId,
       'order_status': instance.orderStatus,
       'direction_type': instance.directionType,
@@ -98,13 +100,15 @@ Map<String, dynamic> _$JobDetailToJson(_JobDetail instance) =>
 // RealmObjectGenerator
 // **************************************************************************
 
-class JobDetail extends _JobDetail with RealmEntity, RealmObject {
+class JobDetail extends _JobDetail
+    with RealmEntity, RealmObjectBase, RealmObject {
   static var _defaultsSet = false;
 
   JobDetail(
-    int id,
+    String remark,
     int ordDetailId,
     int routelineId,
+    String routeName,
     int nextRoutelineId,
     int orderStatus,
     int directionType,
@@ -112,9 +116,8 @@ class JobDetail extends _JobDetail with RealmEntity, RealmObject {
     String jobNumber,
     int customerId,
     String customerName,
-    DateTime deliveryDate,
-    DateTime deliveryDocumentDate,
-    DateTime receiveDate,
+    int statusFromServer,
+    int id,
     DateTime createdDateFromServer,
     String goodsNumber,
     String goodsType,
@@ -122,325 +125,344 @@ class JobDetail extends _JobDetail with RealmEntity, RealmObject {
     String receiverName,
     String receiverAddress,
     String receiverFullAddress,
-    String contactName,
     String contactTelephone,
-    int qty,
+    String createdUserFromServer,
+    String updatedDateFromServer,
     String reference1,
     String reference2,
     String reference3,
-    String remark,
-    int statusFromServer,
-    String createdUserFromServer,
-    String updatedUserFromServer,
-    String updatedDateFromServer, {
-    String? contactEmail,
-    double? weight,
+    String contactName,
+    DateTime deliveryDate,
+    DateTime deliveryDocumentDate,
+    int qty,
+    DateTime receiveDate, {
+    bool isUpdatedFailed = false,
+    String? imgPath,
+    DateTime? latestUpdateTime,
     double? width,
     double? high,
     double? length,
-    String? imgPath,
-    bool isUpdatedFailed = false,
-    DateTime? latestUpdateTime,
+    String? updatedUserFromServer,
+    String? contactEmail,
+    double? weight,
   }) {
     if (!_defaultsSet) {
-      _defaultsSet = RealmObject.setDefaults<JobDetail>({
+      _defaultsSet = RealmObjectBase.setDefaults<JobDetail>({
         'isUpdatedFailed': false,
       });
     }
-    RealmObject.set(this, 'id', id);
-    RealmObject.set(this, 'ordDetailId', ordDetailId);
-    RealmObject.set(this, 'routelineId', routelineId);
-    RealmObject.set(this, 'nextRoutelineId', nextRoutelineId);
-    RealmObject.set(this, 'orderStatus', orderStatus);
-    RealmObject.set(this, 'directionType', directionType);
-    RealmObject.set(this, 'barcode', barcode);
-    RealmObject.set(this, 'jobNumber', jobNumber);
-    RealmObject.set(this, 'customerId', customerId);
-    RealmObject.set(this, 'customerName', customerName);
-    RealmObject.set(this, 'deliveryDate', deliveryDate);
-    RealmObject.set(this, 'deliveryDocumentDate', deliveryDocumentDate);
-    RealmObject.set(this, 'receiveDate', receiveDate);
-    RealmObject.set(this, 'createdDateFromServer', createdDateFromServer);
-    RealmObject.set(this, 'goodsNumber', goodsNumber);
-    RealmObject.set(this, 'goodsType', goodsType);
-    RealmObject.set(this, 'goodsDetails', goodsDetails);
-    RealmObject.set(this, 'receiverName', receiverName);
-    RealmObject.set(this, 'receiverAddress', receiverAddress);
-    RealmObject.set(this, 'receiverFullAddress', receiverFullAddress);
-    RealmObject.set(this, 'contactName', contactName);
-    RealmObject.set(this, 'contactTelephone', contactTelephone);
-    RealmObject.set(this, 'contactEmail', contactEmail);
-    RealmObject.set(this, 'qty', qty);
-    RealmObject.set(this, 'weight', weight);
-    RealmObject.set(this, 'width', width);
-    RealmObject.set(this, 'high', high);
-    RealmObject.set(this, 'length', length);
-    RealmObject.set(this, 'reference1', reference1);
-    RealmObject.set(this, 'reference2', reference2);
-    RealmObject.set(this, 'reference3', reference3);
-    RealmObject.set(this, 'remark', remark);
-    RealmObject.set(this, 'imgPath', imgPath);
-    RealmObject.set(this, 'statusFromServer', statusFromServer);
-    RealmObject.set(this, 'createdUserFromServer', createdUserFromServer);
-    RealmObject.set(this, 'updatedUserFromServer', updatedUserFromServer);
-    RealmObject.set(this, 'updatedDateFromServer', updatedDateFromServer);
-    RealmObject.set(this, 'isUpdatedFailed', isUpdatedFailed);
-    RealmObject.set(this, 'latestUpdateTime', latestUpdateTime);
+    RealmObjectBase.set(this, 'remark', remark);
+    RealmObjectBase.set(this, 'ordDetailId', ordDetailId);
+    RealmObjectBase.set(this, 'routelineId', routelineId);
+    RealmObjectBase.set(this, 'routeName', routeName);
+    RealmObjectBase.set(this, 'nextRoutelineId', nextRoutelineId);
+    RealmObjectBase.set(this, 'orderStatus', orderStatus);
+    RealmObjectBase.set(this, 'directionType', directionType);
+    RealmObjectBase.set(this, 'barcode', barcode);
+    RealmObjectBase.set(this, 'jobNumber', jobNumber);
+    RealmObjectBase.set(this, 'customerId', customerId);
+    RealmObjectBase.set(this, 'customerName', customerName);
+    RealmObjectBase.set(this, 'statusFromServer', statusFromServer);
+    RealmObjectBase.set(this, 'isUpdatedFailed', isUpdatedFailed);
+    RealmObjectBase.set(this, 'id', id);
+    RealmObjectBase.set(this, 'createdDateFromServer', createdDateFromServer);
+    RealmObjectBase.set(this, 'goodsNumber', goodsNumber);
+    RealmObjectBase.set(this, 'goodsType', goodsType);
+    RealmObjectBase.set(this, 'goodsDetails', goodsDetails);
+    RealmObjectBase.set(this, 'receiverName', receiverName);
+    RealmObjectBase.set(this, 'receiverAddress', receiverAddress);
+    RealmObjectBase.set(this, 'receiverFullAddress', receiverFullAddress);
+    RealmObjectBase.set(this, 'imgPath', imgPath);
+    RealmObjectBase.set(this, 'contactTelephone', contactTelephone);
+    RealmObjectBase.set(this, 'createdUserFromServer', createdUserFromServer);
+    RealmObjectBase.set(this, 'updatedDateFromServer', updatedDateFromServer);
+    RealmObjectBase.set(this, 'latestUpdateTime', latestUpdateTime);
+    RealmObjectBase.set(this, 'width', width);
+    RealmObjectBase.set(this, 'high', high);
+    RealmObjectBase.set(this, 'length', length);
+    RealmObjectBase.set(this, 'reference1', reference1);
+    RealmObjectBase.set(this, 'reference2', reference2);
+    RealmObjectBase.set(this, 'reference3', reference3);
+    RealmObjectBase.set(this, 'updatedUserFromServer', updatedUserFromServer);
+    RealmObjectBase.set(this, 'contactName', contactName);
+    RealmObjectBase.set(this, 'deliveryDate', deliveryDate);
+    RealmObjectBase.set(this, 'contactEmail', contactEmail);
+    RealmObjectBase.set(this, 'deliveryDocumentDate', deliveryDocumentDate);
+    RealmObjectBase.set(this, 'qty', qty);
+    RealmObjectBase.set(this, 'receiveDate', receiveDate);
+    RealmObjectBase.set(this, 'weight', weight);
   }
 
   JobDetail._();
 
   @override
-  int get id => RealmObject.get<int>(this, 'id') as int;
+  String get remark => RealmObjectBase.get<String>(this, 'remark') as String;
   @override
-  set id(int value) => RealmObject.set(this, 'id', value);
+  set remark(String value) => RealmObjectBase.set(this, 'remark', value);
 
   @override
-  int get ordDetailId => RealmObject.get<int>(this, 'ordDetailId') as int;
+  int get ordDetailId => RealmObjectBase.get<int>(this, 'ordDetailId') as int;
   @override
-  set ordDetailId(int value) => RealmObject.set(this, 'ordDetailId', value);
+  set ordDetailId(int value) => RealmObjectBase.set(this, 'ordDetailId', value);
 
   @override
-  int get routelineId => RealmObject.get<int>(this, 'routelineId') as int;
+  int get routelineId => RealmObjectBase.get<int>(this, 'routelineId') as int;
   @override
-  set routelineId(int value) => RealmObject.set(this, 'routelineId', value);
+  set routelineId(int value) => RealmObjectBase.set(this, 'routelineId', value);
+
+  @override
+  String get routeName =>
+      RealmObjectBase.get<String>(this, 'routeName') as String;
+  @override
+  set routeName(String value) => RealmObjectBase.set(this, 'routeName', value);
 
   @override
   int get nextRoutelineId =>
-      RealmObject.get<int>(this, 'nextRoutelineId') as int;
+      RealmObjectBase.get<int>(this, 'nextRoutelineId') as int;
   @override
   set nextRoutelineId(int value) =>
-      RealmObject.set(this, 'nextRoutelineId', value);
+      RealmObjectBase.set(this, 'nextRoutelineId', value);
 
   @override
-  int get orderStatus => RealmObject.get<int>(this, 'orderStatus') as int;
+  int get orderStatus => RealmObjectBase.get<int>(this, 'orderStatus') as int;
   @override
-  set orderStatus(int value) => RealmObject.set(this, 'orderStatus', value);
+  set orderStatus(int value) => RealmObjectBase.set(this, 'orderStatus', value);
 
   @override
-  int get directionType => RealmObject.get<int>(this, 'directionType') as int;
+  int get directionType =>
+      RealmObjectBase.get<int>(this, 'directionType') as int;
   @override
-  set directionType(int value) => RealmObject.set(this, 'directionType', value);
+  set directionType(int value) =>
+      RealmObjectBase.set(this, 'directionType', value);
 
   @override
-  String get barcode => RealmObject.get<String>(this, 'barcode') as String;
+  String get barcode => RealmObjectBase.get<String>(this, 'barcode') as String;
   @override
-  set barcode(String value) => RealmObject.set(this, 'barcode', value);
+  set barcode(String value) => RealmObjectBase.set(this, 'barcode', value);
 
   @override
-  String get jobNumber => RealmObject.get<String>(this, 'jobNumber') as String;
+  String get jobNumber =>
+      RealmObjectBase.get<String>(this, 'jobNumber') as String;
   @override
-  set jobNumber(String value) => RealmObject.set(this, 'jobNumber', value);
+  set jobNumber(String value) => RealmObjectBase.set(this, 'jobNumber', value);
 
   @override
-  int get customerId => RealmObject.get<int>(this, 'customerId') as int;
+  int get customerId => RealmObjectBase.get<int>(this, 'customerId') as int;
   @override
-  set customerId(int value) => RealmObject.set(this, 'customerId', value);
+  set customerId(int value) => RealmObjectBase.set(this, 'customerId', value);
 
   @override
   String get customerName =>
-      RealmObject.get<String>(this, 'customerName') as String;
+      RealmObjectBase.get<String>(this, 'customerName') as String;
   @override
   set customerName(String value) =>
-      RealmObject.set(this, 'customerName', value);
-
-  @override
-  DateTime get deliveryDate =>
-      RealmObject.get<DateTime>(this, 'deliveryDate') as DateTime;
-  @override
-  set deliveryDate(DateTime value) =>
-      RealmObject.set(this, 'deliveryDate', value);
-
-  @override
-  DateTime get deliveryDocumentDate =>
-      RealmObject.get<DateTime>(this, 'deliveryDocumentDate') as DateTime;
-  @override
-  set deliveryDocumentDate(DateTime value) =>
-      RealmObject.set(this, 'deliveryDocumentDate', value);
-
-  @override
-  DateTime get receiveDate =>
-      RealmObject.get<DateTime>(this, 'receiveDate') as DateTime;
-  @override
-  set receiveDate(DateTime value) =>
-      RealmObject.set(this, 'receiveDate', value);
-
-  @override
-  DateTime get createdDateFromServer =>
-      RealmObject.get<DateTime>(this, 'createdDateFromServer') as DateTime;
-  @override
-  set createdDateFromServer(DateTime value) =>
-      RealmObject.set(this, 'createdDateFromServer', value);
-
-  @override
-  String get goodsNumber =>
-      RealmObject.get<String>(this, 'goodsNumber') as String;
-  @override
-  set goodsNumber(String value) => RealmObject.set(this, 'goodsNumber', value);
-
-  @override
-  String get goodsType => RealmObject.get<String>(this, 'goodsType') as String;
-  @override
-  set goodsType(String value) => RealmObject.set(this, 'goodsType', value);
-
-  @override
-  String get goodsDetails =>
-      RealmObject.get<String>(this, 'goodsDetails') as String;
-  @override
-  set goodsDetails(String value) =>
-      RealmObject.set(this, 'goodsDetails', value);
-
-  @override
-  String get receiverName =>
-      RealmObject.get<String>(this, 'receiverName') as String;
-  @override
-  set receiverName(String value) =>
-      RealmObject.set(this, 'receiverName', value);
-
-  @override
-  String get receiverAddress =>
-      RealmObject.get<String>(this, 'receiverAddress') as String;
-  @override
-  set receiverAddress(String value) =>
-      RealmObject.set(this, 'receiverAddress', value);
-
-  @override
-  String get receiverFullAddress =>
-      RealmObject.get<String>(this, 'receiverFullAddress') as String;
-  @override
-  set receiverFullAddress(String value) =>
-      RealmObject.set(this, 'receiverFullAddress', value);
-
-  @override
-  String get contactName =>
-      RealmObject.get<String>(this, 'contactName') as String;
-  @override
-  set contactName(String value) => RealmObject.set(this, 'contactName', value);
-
-  @override
-  String get contactTelephone =>
-      RealmObject.get<String>(this, 'contactTelephone') as String;
-  @override
-  set contactTelephone(String value) =>
-      RealmObject.set(this, 'contactTelephone', value);
-
-  @override
-  String? get contactEmail =>
-      RealmObject.get<String>(this, 'contactEmail') as String?;
-  @override
-  set contactEmail(String? value) =>
-      RealmObject.set(this, 'contactEmail', value);
-
-  @override
-  int get qty => RealmObject.get<int>(this, 'qty') as int;
-  @override
-  set qty(int value) => RealmObject.set(this, 'qty', value);
-
-  @override
-  double? get weight => RealmObject.get<double>(this, 'weight') as double?;
-  @override
-  set weight(double? value) => RealmObject.set(this, 'weight', value);
-
-  @override
-  double? get width => RealmObject.get<double>(this, 'width') as double?;
-  @override
-  set width(double? value) => RealmObject.set(this, 'width', value);
-
-  @override
-  double? get high => RealmObject.get<double>(this, 'high') as double?;
-  @override
-  set high(double? value) => RealmObject.set(this, 'high', value);
-
-  @override
-  double? get length => RealmObject.get<double>(this, 'length') as double?;
-  @override
-  set length(double? value) => RealmObject.set(this, 'length', value);
-
-  @override
-  String get reference1 =>
-      RealmObject.get<String>(this, 'reference1') as String;
-  @override
-  set reference1(String value) => RealmObject.set(this, 'reference1', value);
-
-  @override
-  String get reference2 =>
-      RealmObject.get<String>(this, 'reference2') as String;
-  @override
-  set reference2(String value) => RealmObject.set(this, 'reference2', value);
-
-  @override
-  String get reference3 =>
-      RealmObject.get<String>(this, 'reference3') as String;
-  @override
-  set reference3(String value) => RealmObject.set(this, 'reference3', value);
-
-  @override
-  String get remark => RealmObject.get<String>(this, 'remark') as String;
-  @override
-  set remark(String value) => RealmObject.set(this, 'remark', value);
-
-  @override
-  String? get imgPath => RealmObject.get<String>(this, 'imgPath') as String?;
-  @override
-  set imgPath(String? value) => RealmObject.set(this, 'imgPath', value);
+      RealmObjectBase.set(this, 'customerName', value);
 
   @override
   int get statusFromServer =>
-      RealmObject.get<int>(this, 'statusFromServer') as int;
+      RealmObjectBase.get<int>(this, 'statusFromServer') as int;
   @override
   set statusFromServer(int value) =>
-      RealmObject.set(this, 'statusFromServer', value);
-
-  @override
-  String get createdUserFromServer =>
-      RealmObject.get<String>(this, 'createdUserFromServer') as String;
-  @override
-  set createdUserFromServer(String value) =>
-      RealmObject.set(this, 'createdUserFromServer', value);
-
-  @override
-  String get updatedUserFromServer =>
-      RealmObject.get<String>(this, 'updatedUserFromServer') as String;
-  @override
-  set updatedUserFromServer(String value) =>
-      RealmObject.set(this, 'updatedUserFromServer', value);
-
-  @override
-  String get updatedDateFromServer =>
-      RealmObject.get<String>(this, 'updatedDateFromServer') as String;
-  @override
-  set updatedDateFromServer(String value) =>
-      RealmObject.set(this, 'updatedDateFromServer', value);
+      RealmObjectBase.set(this, 'statusFromServer', value);
 
   @override
   bool get isUpdatedFailed =>
-      RealmObject.get<bool>(this, 'isUpdatedFailed') as bool;
+      RealmObjectBase.get<bool>(this, 'isUpdatedFailed') as bool;
   @override
   set isUpdatedFailed(bool value) =>
-      RealmObject.set(this, 'isUpdatedFailed', value);
+      RealmObjectBase.set(this, 'isUpdatedFailed', value);
+
+  @override
+  int get id => RealmObjectBase.get<int>(this, 'id') as int;
+  @override
+  set id(int value) => RealmObjectBase.set(this, 'id', value);
+
+  @override
+  DateTime get createdDateFromServer =>
+      RealmObjectBase.get<DateTime>(this, 'createdDateFromServer') as DateTime;
+  @override
+  set createdDateFromServer(DateTime value) =>
+      RealmObjectBase.set(this, 'createdDateFromServer', value);
+
+  @override
+  String get goodsNumber =>
+      RealmObjectBase.get<String>(this, 'goodsNumber') as String;
+  @override
+  set goodsNumber(String value) =>
+      RealmObjectBase.set(this, 'goodsNumber', value);
+
+  @override
+  String get goodsType =>
+      RealmObjectBase.get<String>(this, 'goodsType') as String;
+  @override
+  set goodsType(String value) => RealmObjectBase.set(this, 'goodsType', value);
+
+  @override
+  String get goodsDetails =>
+      RealmObjectBase.get<String>(this, 'goodsDetails') as String;
+  @override
+  set goodsDetails(String value) =>
+      RealmObjectBase.set(this, 'goodsDetails', value);
+
+  @override
+  String get receiverName =>
+      RealmObjectBase.get<String>(this, 'receiverName') as String;
+  @override
+  set receiverName(String value) =>
+      RealmObjectBase.set(this, 'receiverName', value);
+
+  @override
+  String get receiverAddress =>
+      RealmObjectBase.get<String>(this, 'receiverAddress') as String;
+  @override
+  set receiverAddress(String value) =>
+      RealmObjectBase.set(this, 'receiverAddress', value);
+
+  @override
+  String get receiverFullAddress =>
+      RealmObjectBase.get<String>(this, 'receiverFullAddress') as String;
+  @override
+  set receiverFullAddress(String value) =>
+      RealmObjectBase.set(this, 'receiverFullAddress', value);
+
+  @override
+  String? get imgPath =>
+      RealmObjectBase.get<String>(this, 'imgPath') as String?;
+  @override
+  set imgPath(String? value) => RealmObjectBase.set(this, 'imgPath', value);
+
+  @override
+  String get contactTelephone =>
+      RealmObjectBase.get<String>(this, 'contactTelephone') as String;
+  @override
+  set contactTelephone(String value) =>
+      RealmObjectBase.set(this, 'contactTelephone', value);
+
+  @override
+  String get createdUserFromServer =>
+      RealmObjectBase.get<String>(this, 'createdUserFromServer') as String;
+  @override
+  set createdUserFromServer(String value) =>
+      RealmObjectBase.set(this, 'createdUserFromServer', value);
+
+  @override
+  String get updatedDateFromServer =>
+      RealmObjectBase.get<String>(this, 'updatedDateFromServer') as String;
+  @override
+  set updatedDateFromServer(String value) =>
+      RealmObjectBase.set(this, 'updatedDateFromServer', value);
 
   @override
   DateTime? get latestUpdateTime =>
-      RealmObject.get<DateTime>(this, 'latestUpdateTime') as DateTime?;
+      RealmObjectBase.get<DateTime>(this, 'latestUpdateTime') as DateTime?;
   @override
   set latestUpdateTime(DateTime? value) =>
-      RealmObject.set(this, 'latestUpdateTime', value);
+      RealmObjectBase.set(this, 'latestUpdateTime', value);
+
+  @override
+  double? get width => RealmObjectBase.get<double>(this, 'width') as double?;
+  @override
+  set width(double? value) => RealmObjectBase.set(this, 'width', value);
+
+  @override
+  double? get high => RealmObjectBase.get<double>(this, 'high') as double?;
+  @override
+  set high(double? value) => RealmObjectBase.set(this, 'high', value);
+
+  @override
+  double? get length => RealmObjectBase.get<double>(this, 'length') as double?;
+  @override
+  set length(double? value) => RealmObjectBase.set(this, 'length', value);
+
+  @override
+  String get reference1 =>
+      RealmObjectBase.get<String>(this, 'reference1') as String;
+  @override
+  set reference1(String value) =>
+      RealmObjectBase.set(this, 'reference1', value);
+
+  @override
+  String get reference2 =>
+      RealmObjectBase.get<String>(this, 'reference2') as String;
+  @override
+  set reference2(String value) =>
+      RealmObjectBase.set(this, 'reference2', value);
+
+  @override
+  String get reference3 =>
+      RealmObjectBase.get<String>(this, 'reference3') as String;
+  @override
+  set reference3(String value) =>
+      RealmObjectBase.set(this, 'reference3', value);
+
+  @override
+  String? get updatedUserFromServer =>
+      RealmObjectBase.get<String>(this, 'updatedUserFromServer') as String?;
+  @override
+  set updatedUserFromServer(String? value) =>
+      RealmObjectBase.set(this, 'updatedUserFromServer', value);
+
+  @override
+  String get contactName =>
+      RealmObjectBase.get<String>(this, 'contactName') as String;
+  @override
+  set contactName(String value) =>
+      RealmObjectBase.set(this, 'contactName', value);
+
+  @override
+  DateTime get deliveryDate =>
+      RealmObjectBase.get<DateTime>(this, 'deliveryDate') as DateTime;
+  @override
+  set deliveryDate(DateTime value) =>
+      RealmObjectBase.set(this, 'deliveryDate', value);
+
+  @override
+  String? get contactEmail =>
+      RealmObjectBase.get<String>(this, 'contactEmail') as String?;
+  @override
+  set contactEmail(String? value) =>
+      RealmObjectBase.set(this, 'contactEmail', value);
+
+  @override
+  DateTime get deliveryDocumentDate =>
+      RealmObjectBase.get<DateTime>(this, 'deliveryDocumentDate') as DateTime;
+  @override
+  set deliveryDocumentDate(DateTime value) =>
+      RealmObjectBase.set(this, 'deliveryDocumentDate', value);
+
+  @override
+  int get qty => RealmObjectBase.get<int>(this, 'qty') as int;
+  @override
+  set qty(int value) => RealmObjectBase.set(this, 'qty', value);
+
+  @override
+  DateTime get receiveDate =>
+      RealmObjectBase.get<DateTime>(this, 'receiveDate') as DateTime;
+  @override
+  set receiveDate(DateTime value) =>
+      RealmObjectBase.set(this, 'receiveDate', value);
+
+  @override
+  double? get weight => RealmObjectBase.get<double>(this, 'weight') as double?;
+  @override
+  set weight(double? value) => RealmObjectBase.set(this, 'weight', value);
 
   @override
   Stream<RealmObjectChanges<JobDetail>> get changes =>
-      RealmObject.getChanges<JobDetail>(this);
+      RealmObjectBase.getChanges<JobDetail>(this);
 
   @override
-  JobDetail freeze() => RealmObject.freezeObject<JobDetail>(this);
+  JobDetail freeze() => RealmObjectBase.freezeObject<JobDetail>(this);
 
   static SchemaObject get schema => _schema ??= _initSchema();
   static SchemaObject? _schema;
   static SchemaObject _initSchema() {
-    RealmObject.registerFactory(JobDetail._);
-    return const SchemaObject(JobDetail, 'JobDetail', [
-      SchemaProperty('id', RealmPropertyType.int, primaryKey: true),
+    RealmObjectBase.registerFactory(JobDetail._);
+    return const SchemaObject(ObjectType.realmObject, JobDetail, 'JobDetail', [
+      SchemaProperty('remark', RealmPropertyType.string),
       SchemaProperty('ordDetailId', RealmPropertyType.int),
       SchemaProperty('routelineId', RealmPropertyType.int),
+      SchemaProperty('routeName', RealmPropertyType.string),
       SchemaProperty('nextRoutelineId', RealmPropertyType.int),
       SchemaProperty('orderStatus', RealmPropertyType.int),
       SchemaProperty('directionType', RealmPropertyType.int),
@@ -448,9 +470,9 @@ class JobDetail extends _JobDetail with RealmEntity, RealmObject {
       SchemaProperty('jobNumber', RealmPropertyType.string),
       SchemaProperty('customerId', RealmPropertyType.int),
       SchemaProperty('customerName', RealmPropertyType.string),
-      SchemaProperty('deliveryDate', RealmPropertyType.timestamp),
-      SchemaProperty('deliveryDocumentDate', RealmPropertyType.timestamp),
-      SchemaProperty('receiveDate', RealmPropertyType.timestamp),
+      SchemaProperty('statusFromServer', RealmPropertyType.int),
+      SchemaProperty('isUpdatedFailed', RealmPropertyType.bool),
+      SchemaProperty('id', RealmPropertyType.int, primaryKey: true),
       SchemaProperty('createdDateFromServer', RealmPropertyType.timestamp),
       SchemaProperty('goodsNumber', RealmPropertyType.string),
       SchemaProperty('goodsType', RealmPropertyType.string),
@@ -458,26 +480,27 @@ class JobDetail extends _JobDetail with RealmEntity, RealmObject {
       SchemaProperty('receiverName', RealmPropertyType.string),
       SchemaProperty('receiverAddress', RealmPropertyType.string),
       SchemaProperty('receiverFullAddress', RealmPropertyType.string),
-      SchemaProperty('contactName', RealmPropertyType.string),
+      SchemaProperty('imgPath', RealmPropertyType.string, optional: true),
       SchemaProperty('contactTelephone', RealmPropertyType.string),
-      SchemaProperty('contactEmail', RealmPropertyType.string, optional: true),
-      SchemaProperty('qty', RealmPropertyType.int),
-      SchemaProperty('weight', RealmPropertyType.double, optional: true),
+      SchemaProperty('createdUserFromServer', RealmPropertyType.string),
+      SchemaProperty('updatedDateFromServer', RealmPropertyType.string),
+      SchemaProperty('latestUpdateTime', RealmPropertyType.timestamp,
+          optional: true),
       SchemaProperty('width', RealmPropertyType.double, optional: true),
       SchemaProperty('high', RealmPropertyType.double, optional: true),
       SchemaProperty('length', RealmPropertyType.double, optional: true),
       SchemaProperty('reference1', RealmPropertyType.string),
       SchemaProperty('reference2', RealmPropertyType.string),
       SchemaProperty('reference3', RealmPropertyType.string),
-      SchemaProperty('remark', RealmPropertyType.string),
-      SchemaProperty('imgPath', RealmPropertyType.string, optional: true),
-      SchemaProperty('statusFromServer', RealmPropertyType.int),
-      SchemaProperty('createdUserFromServer', RealmPropertyType.string),
-      SchemaProperty('updatedUserFromServer', RealmPropertyType.string),
-      SchemaProperty('updatedDateFromServer', RealmPropertyType.string),
-      SchemaProperty('isUpdatedFailed', RealmPropertyType.bool),
-      SchemaProperty('latestUpdateTime', RealmPropertyType.timestamp,
+      SchemaProperty('updatedUserFromServer', RealmPropertyType.string,
           optional: true),
+      SchemaProperty('contactName', RealmPropertyType.string),
+      SchemaProperty('deliveryDate', RealmPropertyType.timestamp),
+      SchemaProperty('contactEmail', RealmPropertyType.string, optional: true),
+      SchemaProperty('deliveryDocumentDate', RealmPropertyType.timestamp),
+      SchemaProperty('qty', RealmPropertyType.int),
+      SchemaProperty('receiveDate', RealmPropertyType.timestamp),
+      SchemaProperty('weight', RealmPropertyType.double, optional: true),
     ]);
   }
 }

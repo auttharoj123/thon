@@ -232,7 +232,7 @@ class _LoginScreenState extends State<LoginScreenPage> {
         style: FxTextStyle.bodyMedium(color: Colors.white),
         decoration: InputDecoration(
           hintText: "Login name",
-          hintStyle: FxTextStyle.bodyMedium(),
+          hintStyle: FxTextStyle.bodyMedium(color: Colors.white),
           filled: true,
           fillColor: Color.fromRGBO(105, 167, 240, 1),
           border: InputBorder.none,
@@ -271,7 +271,7 @@ class _LoginScreenState extends State<LoginScreenPage> {
         obscureText: controller.enable ? false : true,
         decoration: InputDecoration(
           hintText: "Password",
-          hintStyle: FxTextStyle.bodyMedium(),
+          hintStyle: FxTextStyle.bodyMedium(color: Colors.white),
           filled: true,
           fillColor: Color.fromRGBO(105, 167, 240, 1),
           border: InputBorder.none,

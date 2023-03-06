@@ -23,25 +23,26 @@ class PreLoadingController extends BaseController {
   Future initializeData() async {
     var prefs = await SharedPreferences.getInstance();
     if (appController.accessToken != null) {
-      appController.routelines = await appController.api.fetchAllRouteLine();
-      var routelineId = prefs.getInt("routelineId");
-      if (routelineId != null) {
-        appController.selectedRouteLine = appController.routelines
-            .where((element) => element.routelineId == routelineId)
-            .first;
-      } else {
-        appController.selectedRouteLine = appController.routelines[0];
-      }
+      // appController.routelines = await appController.api.fetchAllRouteLine();
+      // var routelineId = prefs.getInt("routelineId");
+      // if (routelineId != null) {
+      //   appController.selectedRouteLine = appController.routelines
+      //       .where((element) => element.routelineId == routelineId)
+      //       .first;
+      // } else {
+      //   appController.selectedRouteLine = appController.routelines[0];
+      // }
       appController.mstTypes = await appController.api.fetchRemark();
 
       var userInfoResp = await appController.api.fetchUserInfo();
       appController.roleAdmin = userInfoResp["result"]["roleAdmin"];
 
-      if (appController.roleAdmin!) {
-        Navigator.of(context).pushReplacementNamed("/admin_home");
-      } else {
-        Navigator.of(context).pushReplacementNamed("/driver_home");
-      }
+      Navigator.of(context).pushReplacementNamed("/admin_home");
+      // if (appController.roleAdmin!) {
+      //   Navigator.of(context).pushReplacementNamed("/admin_home");
+      // } else {
+      //   Navigator.of(context).pushReplacementNamed("/driver_home");
+      // }
     }
   }
 

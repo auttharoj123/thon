@@ -38,7 +38,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             body: SingleChildScrollView(
               child: Container(
                 padding: FxSpacing.fromLTRB(
-                    20, FxSpacing.safeAreaTop(context) + 16, 20, 0),
+                    20, FxSpacing.safeAreaTop(context) + 16, 20, 200),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -70,7 +70,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         FxSpacing.width(8),
         FxText.titleMedium(
-          "My Shop",
+          "โปรไฟล์",
           fontWeight: 600,
         ),
       ],
@@ -100,7 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       FxText.bodySmall(
-                        'Products',
+                        'งานที่ส่งแล้ว',
                         fontWeight: 600,
                       ),
                       FxSpacing.height(4),
@@ -132,7 +132,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       FxText.bodySmall(
-                        'Orders',
+                        'งานที่รอการอัปโหลด',
                         fontWeight: 600,
                       ),
                       FxSpacing.height(4),
