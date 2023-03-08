@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:ui';
 
+import 'package:rive/rive.dart';
 import 'package:slpod/constants/SLConsts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
@@ -75,94 +77,116 @@ class _LoginScreenState extends State<LoginScreenPage> {
         builder: (controller) {
           return Scaffold(
               //resizeToAvoidBottomInset: false,
-              body: Container(
-            // color: Color.fromRGBO(2, 3, 13, 1),
-            // decoration: BoxDecoration(
-            //   image: DecorationImage(
-            //     image: AssetImage("assets/images/bulb.jpg"),
-            //     fit: BoxFit.cover,
-            //   ),
-            // ),
-            //padding: FxSpacing.nBottom(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  SLColor.LIGHTBLUE1,
-                  SLColor.LIGHTBLUE2,
-                  SLColor.BLUE,
-                ],
-              ),
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Positioned(
-                  top: -test!,
-                  width: MediaQuery.of(context).size.width,
-                  height: 200,
-                  child: Transform.scale(
-                      scale: 1.5,
-                      child: Material(
-                        elevation: 10.0,
-                        borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(200),
-                            bottomRight: Radius.circular(200)),
-                        child: Container(
-                          decoration: BoxDecoration(
-                              //color: Colors.white,
-                              image: DecorationImage(
-                                image: AssetImage(
-                                    'assets/images/sailom/login_bg.png'),
-                                fit: BoxFit.cover,
-                                colorFilter: ColorFilter.mode(
-                                    Colors.black45, BlendMode.darken),
+              body: Stack(
+                children: [
+                  // Image.asset('assets/images/sailom/logo_white.jpg'),
+                  Container(
+                    // height: MediaQuery.of(context).size.height,
+                    child: RiveAnimation.asset(
+                            
+                            'assets/animations/rive/background4.riv',
+                            artboard: "Motion",
+                            fit: BoxFit.fitHeight,
+                            // controllers: [_controller],
+                          ),
+                  ),
+                  BackdropFilter(
+                    filter: ImageFilter.blur(
+                      sigmaX: 10,
+                      sigmaY: 10
+                    ),
+                    child: Container(
+                              // color: Color.fromRGBO(2, 3, 13, 1),
+                              // decoration: BoxDecoration(
+                              //   image: DecorationImage(
+                              //     image: AssetImage("assets/images/bulb.jpg"),
+                              //     fit: BoxFit.cover,
+                              //   ),
+                              // ),
+                              //padding: FxSpacing.nBottom(20),
+                              decoration: BoxDecoration(
+                    // gradient: LinearGradient(
+                    //   begin: Alignment.topCenter,
+                    //   end: Alignment.bottomCenter,
+                    //   colors: [
+                    //     SLColor.LIGHTBLUE1,
+                    //     SLColor.LIGHTBLUE2,
+                    //     SLColor.BLUE,
+                    //   ],
+                    // ),
                               ),
-                              borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(200),
-                                  bottomRight: Radius.circular(200))),
+                              child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Positioned(
+                      //   top: -test!,
+                      //   width: MediaQuery.of(context).size.width,
+                      //   height: 200,
+                      //   child: Transform.scale(
+                      //       scale: 1.5,
+                      //       child: Material(
+                      //         elevation: 10.0,
+                      //         borderRadius: BorderRadius.only(
+                      //             bottomLeft: Radius.circular(200),
+                      //             bottomRight: Radius.circular(200)),
+                      //         child: Container(
+                      //           decoration: BoxDecoration(
+                      //               //color: Colors.white,
+                      //               image: DecorationImage(
+                      //                 image: AssetImage(
+                      //                     'assets/images/sailom/logo_white.jpg'),
+                      //                 fit: BoxFit.fitWidth,
+                      //                 colorFilter: ColorFilter.mode(
+                      //                     Colors.black45, BlendMode.darken),
+                      //               ),
+                      //               borderRadius: BorderRadius.only(
+                      //                   bottomLeft: Radius.circular(200),
+                      //                   bottomRight: Radius.circular(200))),
+                      //         ),
+                      //       )),
+                      // ),
+                      // Positioned(
+                      //   top: 180 - test!,
+                      //   child: Container(
+                      //     //padding: FxSpacing.all(10),
+                      //     decoration: BoxDecoration(
+                      //         color: Colors.white,
+                      //         border: Border.all(
+                      //             width: 2, color: Color.fromRGBO(47, 129, 229, 1)),
+                      //         borderRadius: BorderRadius.all(Radius.circular(75))),
+                      //     child: logo(),
+                      //   ),
+                      // ),
+                      Container(
+                        padding: FxSpacing.nBottom(20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            
+                            // FxSpacing.height(20),
+                            //FxSpacing.height(180),
+                            //SizedBox(height: 200),
+                            // Expanded(child: Container(), flex: 3),
+                            //welcomeTitle(),
+                            loginTitle(),
+                            logo(),
+                            // FxSpacing.height(20),
+                            loginForm(),
+                            Expanded(child: Container()),
+                            //forgotPassword(),
+                            //FxSpacing.height(10),
+                            loginBtn(),
+                            FxSpacing.height(20),
+                            //registerBtn()
+                          ],
                         ),
-                      )),
-                ),
-                Positioned(
-                  top: 180 - test!,
-                  child: Container(
-                    //padding: FxSpacing.all(10),
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                            width: 2, color: Color.fromRGBO(47, 129, 229, 1)),
-                        borderRadius: BorderRadius.all(Radius.circular(75))),
-                    child: logo(),
-                  ),
-                ),
-                Container(
-                  padding: FxSpacing.nBottom(20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      //logo(),
-                      // FxSpacing.height(20),
-                      //FxSpacing.height(180),
-                      //SizedBox(height: 200),
-                      Expanded(child: Container(), flex: 3),
-                      //welcomeTitle(),
-                      loginTitle(),
-                      FxSpacing.height(20),
-                      loginForm(),
-                      Expanded(child: Container()),
-                      //forgotPassword(),
-                      //FxSpacing.height(10),
-                      loginBtn(),
-                      FxSpacing.height(20),
-                      //registerBtn()
+                      )
                     ],
+                              ),
+                            ),
                   ),
-                )
-              ],
-            ),
-          ));
+                ],
+              ));
         });
   }
 
@@ -178,12 +202,15 @@ class _LoginScreenState extends State<LoginScreenPage> {
   }
 
   Widget loginTitle() {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: FxText.headlineMedium(
-        "เข้าสู่ระบบ",
-        fontWeight: 700,
-        color: Colors.white,
+    return SafeArea(
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: FxText.headlineLarge(
+          "เข้าสู่ระบบ",
+          fontWeight: 500,
+          fontSize: 50,
+          color: Colors.white,
+        ),
       ),
     );
   }
@@ -191,13 +218,9 @@ class _LoginScreenState extends State<LoginScreenPage> {
   Widget logo() {
     return ClipRRect(
       child: Container(
-        width: 130,
-        height: 130,
         child: Center(
           child: Image.asset(
-            'assets/images/sailom/logo_white.jpg',
-            width: 100,
-            height: 100,
+            'assets/images/sailom/logo_white-transparent.png',
           ),
         ),
       ),
@@ -233,12 +256,12 @@ class _LoginScreenState extends State<LoginScreenPage> {
       elevation: 10.0,
       shadowColor: Color.fromRGBO(89, 152, 229, 0.6),
       child: TextFormField(
-        style: FxTextStyle.bodyMedium(color: Colors.white),
+        style: FxTextStyle.bodyMedium(color: Colors.blue),
         decoration: InputDecoration(
           hintText: "Login name",
-          hintStyle: FxTextStyle.bodyMedium(color: Colors.white),
+          hintStyle: FxTextStyle.bodyMedium(color: Colors.grey),
           filled: true,
-          fillColor: Color.fromRGBO(105, 167, 240, 1),
+          fillColor: Colors.white,
           border: InputBorder.none,
           enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10.0),
@@ -252,7 +275,7 @@ class _LoginScreenState extends State<LoginScreenPage> {
           prefixIcon: Icon(
             FeatherIcons.user,
             size: 22,
-            color: Colors.white,
+            color: Colors.blue,
           ),
           isDense: true,
           contentPadding: EdgeInsets.all(0),
@@ -271,13 +294,13 @@ class _LoginScreenState extends State<LoginScreenPage> {
       elevation: 10.0,
       shadowColor: Color.fromRGBO(89, 152, 229, 0.6),
       child: TextFormField(
-        style: FxTextStyle.bodyMedium(color: Colors.white),
+        style: FxTextStyle.bodyMedium(color: Colors.blue),
         obscureText: controller.enable ? false : true,
         decoration: InputDecoration(
           hintText: "Password",
-          hintStyle: FxTextStyle.bodyMedium(color: Colors.white),
+          hintStyle: FxTextStyle.bodyMedium(color: Colors.grey),
           filled: true,
-          fillColor: Color.fromRGBO(105, 167, 240, 1),
+          fillColor: Colors.white,
           border: InputBorder.none,
           enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10.0),
@@ -297,12 +320,12 @@ class _LoginScreenState extends State<LoginScreenPage> {
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
                 size: 20,
-                color: Colors.white,
+                color: Colors.blue,
               )),
           prefixIcon: Icon(
             FeatherIcons.key,
             size: 22,
-            color: Colors.white,
+            color: Colors.blue,
           ),
           isDense: true,
           contentPadding: EdgeInsets.all(0),
@@ -334,29 +357,31 @@ class _LoginScreenState extends State<LoginScreenPage> {
   }
 
   Widget loginBtn() {
-    return FxButton.block(
-      padding: FxSpacing.y(12),
-      onPressed: () {
-        controller.login();
-      },
-      backgroundColor: Colors.white,
-      elevation: 0,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          FxText.bodyLarge("ลงชื่อเข้าใช้งาน".toUpperCase(),
-              fontWeight: 700,
-              color: Color.fromRGBO(47, 129, 229, 1),
-              letterSpacing: 0.5),
-          FxSpacing.width(8),
-          Icon(
-            FeatherIcons.chevronRight,
-            size: 18,
-            color: theme.colorScheme.onPrimary,
-          )
-        ],
+    return SafeArea(
+      child: FxButton.block(
+        padding: FxSpacing.y(12),
+        onPressed: () {
+          controller.login();
+        },
+        backgroundColor: Colors.white,
+        elevation: 0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FxText.bodyLarge("ลงชื่อเข้าใช้งาน".toUpperCase(),
+                fontWeight: 700,
+                color: Color.fromRGBO(47, 129, 229, 1),
+                letterSpacing: 0.5),
+            FxSpacing.width(8),
+            Icon(
+              FeatherIcons.chevronRight,
+              size: 18,
+              color: theme.colorScheme.onPrimary,
+            )
+          ],
+        ),
+        borderRadiusAll: 24,
       ),
-      borderRadiusAll: 24,
     );
   }
 
