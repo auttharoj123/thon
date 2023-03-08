@@ -38,6 +38,24 @@ class SendJobController extends BaseController {
   var strokeWidth = 3.0;
   var globalWidget = GlobalWidget();
   var isLoading = false;
+  var specialRemarks = [
+    "ร้านปิดชั่วคราว",
+    "ร้านค้าปิดกิจการ",
+    "ลูกค้านัดส่ง",
+    "เกิดอุบัติเหตุ/รถเสีย",
+    "จัดส่งโดย partner",
+    "ลูกค้าไม่สะดวกรับสินค้า",
+    "ติดต่อลูกค้าไม่ได้",
+    "ชำรุด/จัดส่งสินค้าไม่ครบ",
+    "ค่าขึ้นชั้น",
+    "ค่าจอดรถ",
+    "ค่าพาเลท",
+    "ค่าเด็กยก/จัดเรียง",
+    "ค่าลิฟต์",
+    "ค่ารถเข็น",
+    "ใช้เวลาในการส่ง 1 ชม.",
+    "ใช้เวลาในการส่ง 2 ชม.ขึ้นไป"
+  ];
 
   @override
   void initState() {
@@ -129,20 +147,21 @@ class SendJobController extends BaseController {
         pageController.animateToPage(currentPageState,
             duration: Duration(milliseconds: 300), curve: Curves.ease);
         update();
-      } else if (args["jobType"] == SendJobType.REMARK) {
-        if (remarkCatIdDump.isEmpty) {
-          showDialog(
-              context: context,
-              builder: (context) => globalWidget.errorDialog(
-                  context, "กรุณาเลือกหมายเหตุการส่งงาน"));
-          return;
-        }
-
-        currentPageState++;
-        pageController.animateToPage(currentPageState,
-            duration: Duration(milliseconds: 300), curve: Curves.ease);
-        update();
       }
+      // else if (args["jobType"] == SendJobType.REMARK) {
+      //   if (remarkCatIdDump.isEmpty) {
+      //     showDialog(
+      //         context: context,
+      //         builder: (context) => globalWidget.errorDialog(
+      //             context, "กรุณาเลือกหมายเหตุการส่งงาน"));
+      //     return;
+      //   }
+
+      //   currentPageState++;
+      //   pageController.animateToPage(currentPageState,
+      //       duration: Duration(milliseconds: 300), curve: Curves.ease);
+      //   update();
+      // }
     } else if (currentPageState == 1) {
       var isSendJobRemark = args["jobType"] == SendJobType.REMARK;
 
@@ -198,7 +217,7 @@ class SendJobController extends BaseController {
           ids,
           barcodes.join(','),
           isSendJobRemark ? JobStatus.SENDING : JobStatus.SENT,
-          isSendJobRemark ? remarkCatIdDump.toInt() : remarkCatId.toInt(),
+          remarkCatId.toInt(),
           point,
           isSendJobRemark ? "" : signatureFile!.path,
           false,

@@ -55,9 +55,10 @@ class LoginController extends BaseController {
   String? validatePassword(String? text) {
     if (text == null || text.isEmpty) {
       return "Please enter password";
-    } else if (!FxStringValidator.validateStringRange(text, 6, 10)) {
-      return "Password must be between 6 to 10";
-    }
+    } 
+    // else if (!FxStringValidator.validateStringRange(text, 6, 10)) {
+    //   return "Password must be between 6 to 10";
+    // }
     return null;
   }
 

@@ -32,7 +32,7 @@ class PreLoadingController extends BaseController {
       // } else {
       //   appController.selectedRouteLine = appController.routelines[0];
       // }
-      appController.mstTypes = await appController.api.fetchRemark();
+      //appController.mstTypes = await appController.api.fetchRemark();
 
       var userInfoResp = await appController.api.fetchUserInfo();
       appController.roleAdmin = userInfoResp["result"]["roleAdmin"];

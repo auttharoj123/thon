@@ -146,7 +146,7 @@ class _LoginScreenState extends State<LoginScreenPage> {
                       // FxSpacing.height(20),
                       //FxSpacing.height(180),
                       //SizedBox(height: 200),
-                      Expanded(child: Container(), flex: 2),
+                      Expanded(child: Container(), flex: 3),
                       //welcomeTitle(),
                       loginTitle(),
                       FxSpacing.height(20),
@@ -189,12 +189,16 @@ class _LoginScreenState extends State<LoginScreenPage> {
   }
 
   Widget logo() {
-    return Container(
-      child: Center(
-        child: Image.asset(
-          'assets/images/sailom/logo1.png',
-          width: 100,
-          height: 100,
+    return ClipRRect(
+      child: Container(
+        width: 130,
+        height: 130,
+        child: Center(
+          child: Image.asset(
+            'assets/images/sailom/logo_white.jpg',
+            width: 100,
+            height: 100,
+          ),
         ),
       ),
     );

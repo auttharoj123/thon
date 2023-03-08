@@ -5,6 +5,7 @@ import 'package:slpod/repositories/job_repostitory.dart';
 
 class NonUpdateJobLogHistoryController extends BaseController {
   List<NonUpdatedJob> jobs = [];
+  int selectedGroup = 0;
 
   @override
   void initState() {
@@ -14,7 +15,12 @@ class NonUpdateJobLogHistoryController extends BaseController {
   @override
   void onReady() async {
     super.onReady();
-    jobs = await JobRepository.getAllNonUpdatedJob(false);
+    loadData();
+  }
+
+  loadData() async {
+    jobs = await JobRepository.getAllNonUpdatedJob(selectedGroup == 0);
+    update();
   }
 
   @override

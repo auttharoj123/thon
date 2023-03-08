@@ -70,9 +70,37 @@ class _NonUpdateJobLogHistoryScreen
                           child: Column(
                             children: [
                               FxContainer(
+                                onTap: () {
+                                  controller.selectedGroup = 0;
+                                  controller.loadData();
+                                },
                                 child: Row(children: [
-                                  FxText("Test1"),
-                                  FxText("Test2")
+                                  FxContainer(
+                                      color: (controller.selectedGroup == 0)
+                                          ? Colors.green
+                                          : Colors.transparent,
+                                      child: FxText.titleSmall(
+                                        "สำเร็จ",
+                                        color: (controller.selectedGroup == 0)
+                                            ? Colors.white
+                                            : Colors.black,
+                                      )),
+                                  FxContainer(
+                                      onTap: () {
+                                        controller.selectedGroup = 1;
+                                        controller.loadData();
+                                      },
+                                      color: (controller.selectedGroup == 1)
+                                          ? Colors.green
+                                          : Colors.transparent,
+                                      child: FxText.titleSmall(
+                                        "ไม่สำเร็จ",
+                                        color: (controller.selectedGroup == 1)
+                                            ? Colors.white
+                                            : Colors.black,
+                                      )),
+                                  Expanded(child: Container()),
+                                  FxText.titleSmall("เคลียร์ข้อมูล",color: Colors.red)
                                 ]),
                               ),
                               FxSpacing.height(20),
@@ -93,12 +121,14 @@ class _NonUpdateJobLogHistoryScreen
                                               Expanded(
                                                 child: Row(
                                                   children: [
-                                                    Icon(FontAwesomeIcons.barcode, color: Colors.blue),
+                                                    Icon(
+                                                        FontAwesomeIcons
+                                                            .barcode,
+                                                        color: Colors.blue),
                                                     FxSpacing.width(10),
                                                     Flexible(
                                                         child: FxText.titleMedium(
-                                                      '${job.barcodes}'
-                                                    )),
+                                                            '${job.barcodes}')),
                                                   ],
                                                 ),
                                               ),

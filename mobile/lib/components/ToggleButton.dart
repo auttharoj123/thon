@@ -7,7 +7,7 @@ class ToggleButton extends StatefulWidget {
   final String value;
   final Function(String value)? onChecked;
   const ToggleButton(
-      {super.key, this.onChecked, this.value = "", this.width = 180});
+      {super.key, this.onChecked, this.value = "", this.width = 160});
 
   @override
   State<ToggleButton> createState() => _ToggleButtonState();
@@ -43,7 +43,7 @@ class _ToggleButtonState extends State<ToggleButton>
   Widget build(BuildContext context) {
     return Container(
       margin: FxSpacing.fromLTRB(10, 0, 10, 0),
-      width: widget.width,
+      // width: widget.width,
       height: 50,
       child: GestureDetector(
         onTap: () {
@@ -62,8 +62,8 @@ class _ToggleButtonState extends State<ToggleButton>
                 repeat: false,
               ),
             ),
-            FxSpacing.width(10),
-            Flexible(child: FxText.titleMedium(widget.value))
+            FxSpacing.width(5),
+            Flexible(child: FxText.titleSmall(widget.value,maxLines: 2))
           ],
         ),
       ),

@@ -216,14 +216,8 @@ class _HomeScreenState extends SLState<HomeScreen>
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Container(
-                  margin: FxSpacing.right(16),
-                  child: Icon(
-                    Icons.warning,
-                    size: 28,
-                    color: Colors.red,
-                  ),
-                ),
+                Lottie.asset("assets/animations/lottie/warning.json",
+                    height: 50),
                 FxSpacing.width(8),
                 Expanded(
                   child: RichText(
@@ -731,6 +725,29 @@ class _HomeScreenState extends SLState<HomeScreen>
     );
   }
 
+  Widget _buildLateDeliveryWarning(job) {
+    return (controller.selectedJobStatus == JobStatus.SENDING &&
+            DateTime.now()
+                .subtract(Duration(days: 0))
+                .isAfter(job.deliveryDate))
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  FxText("เกินกำหนด 3 วัน",
+                      fontWeight: 600, fontSize: 14, color: Colors.red),
+                  FxSpacing.width(10),
+                  Lottie.asset("assets/animations/lottie/warning-sign.json",
+                      height: 30)
+                ],
+              ),
+              FxSpacing.height(10),
+            ],
+          )
+        : Container();
+  }
+
   Widget _buildJobDetailWrapperItem(JobDetailWrapper wrapper) {
     var titleFontSize = 14.0;
     if (wrapper.items.length == 1) {
@@ -830,21 +847,7 @@ class _HomeScreenState extends SLState<HomeScreen>
                             ],
                           ),
                           FxSpacing.height(10),
-                          (controller.selectedJobStatus == JobStatus.SENDING &&
-                                  DateTime.now()
-                                      .subtract(Duration(days: 3))
-                                      .isAfter(wrapper.items[0].deliveryDate))
-                              ? Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    FxText("เกินกำหนด 3 วัน!!",
-                                        fontWeight: 600,
-                                        fontSize: 14,
-                                        color: Colors.red),
-                                    FxSpacing.height(10),
-                                  ],
-                                )
-                              : Container(),
+                          _buildLateDeliveryWarning(wrapper.items[0]),
                           Row(
                             children: [
                               FxText(
@@ -893,11 +896,13 @@ class _HomeScreenState extends SLState<HomeScreen>
                                           size: 20,
                                         ),
                                         FxSpacing.width(10),
-                                        FxText(
-                                          "${wrapper.items[0].routeName}",
-                                          fontWeight: 600,
-                                          fontSize: titleFontSize,
-                                          color: Colors.grey,
+                                        Flexible(
+                                          child: FxText(
+                                            "${wrapper.items[0].routeName}",
+                                            fontWeight: 600,
+                                            fontSize: titleFontSize,
+                                            color: Colors.grey,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -1055,19 +1060,7 @@ class _HomeScreenState extends SLState<HomeScreen>
                 ],
               ),
               FxSpacing.height(10),
-              (controller.selectedJobStatus == JobStatus.SENDING &&
-                      DateTime.now()
-                          .subtract(Duration(days: 3))
-                          .isAfter(job.deliveryDate))
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        FxText("เกินกำหนด 3 วัน!!",
-                            fontWeight: 600, fontSize: 14, color: Colors.red),
-                        FxSpacing.height(10),
-                      ],
-                    )
-                  : Container(),
+              _buildLateDeliveryWarning(job),
               Row(
                 children: [
                   FxText(
@@ -1771,104 +1764,90 @@ class _HomeScreenState extends SLState<HomeScreen>
         (controller.selectedJobStatus == JobStatus.SENDING)
             ? AnimatedPositioned(
                 // top: MediaQuery.of(context).size.height / 2 - 75,
-                bottom: controller.selectedJobIds.length > 0 ? 180 : 75,
+                bottom: controller.selectedJobIds.length > 0 ? 150 : 20,
                 right: 20,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      width: 50,
-                      height: 150,
-                      decoration: BoxDecoration(
-                          // color: Colors.blue.withAlpha(150),
-                          borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(10),
-                              bottomLeft: Radius.circular(10)),
-                          gradient: LinearGradient(colors: [
-                            Colors.blue.shade500.withAlpha(180),
-                            Colors.blue.shade300.withAlpha(180)
-                          ])),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          FxContainer.bordered(
-                              onTap: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) =>
-                                        inputBarcodeDialog(context));
-                              },
-                              paddingAll: 10,
-                              marginAll: 0,
-                              bordered: false,
-                              color: Colors.blue,
-                              child: Icon(
-                                FontAwesomeIcons.barcode,
-                                color: Colors.white,
-                                size: 20,
-                              )),
-                          FxSpacing.height(10),
-                          FxContainer.bordered(
-                              onTap: () async {
-                                var value =
-                                    await FlutterBarcodeScanner.scanBarcode(
-                                        "#ff6666",
-                                        "Cancel",
-                                        true,
-                                        ScanMode.BARCODE);
+                child: Container(
+                  width: 60,
+                  height: 150,
+                  // decoration: BoxDecoration(
+                  //     // color: Colors.blue.withAlpha(150),
+                  //     borderRadius: BorderRadius.only(
+                  //         topLeft: Radius.circular(10),
+                  //         bottomLeft: Radius.circular(10)),
+                  //     gradient: LinearGradient(colors: [
+                  //       Colors.blue.shade500.withAlpha(180),
+                  //       Colors.blue.shade300.withAlpha(180)
+                  //     ])),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      FxContainer.roundBordered(
+                          onTap: () {
+                            showDialog(
+                                context: context,
+                                builder: (context) =>
+                                    inputBarcodeDialog(context));
+                          },
+                          paddingAll: 10,
+                          marginAll: 0,
+                          bordered: false,
+                          color: Colors.grey.shade200,
+                          child: Lottie.asset('assets/animations/lottie/keyboard.json')),
+                      FxSpacing.height(10),
+                      FxContainer.roundBordered(
+                          onTap: () async {
+                            var value =
+                                await FlutterBarcodeScanner.scanBarcode(
+                                    "#ff6666",
+                                    "Cancel",
+                                    true,
+                                    ScanMode.BARCODE);
 
-                                if (value != "-1") {
-                                  if (controller.selectionJobType ==
-                                      SelectionJobType.receive_job) {
-                                    var response = await controller
-                                        .appController.api
-                                        .updateJobStatusByBarCode(value);
-                                    if (response != null) {
-                                      if (response["isSuccess"]) {
-                                        controller.reloadAllJobs(
-                                            forceReload: true);
-                                      } else {
-                                        showDialog(
-                                            context: context,
-                                            builder: (context) {
-                                              return _globalWidget.errorDialog(
-                                                  context, response["message"]);
-                                            });
-                                      }
-                                    }
+                            if (value != "-1") {
+                              if (controller.selectionJobType ==
+                                  SelectionJobType.receive_job) {
+                                var response = await controller
+                                    .appController.api
+                                    .updateJobStatusByBarCode(value);
+                                if (response != null) {
+                                  if (response["isSuccess"]) {
+                                    controller.reloadAllJobs(
+                                        forceReload: true);
                                   } else {
-                                    var errorMessage = await controller
-                                        .searchJobsForSend(value);
-                                    if (errorMessage.isNotEmpty) {
-                                      showDialog(
-                                          context: context,
-                                          builder: (context) =>
-                                              _globalWidget.errorDialog(
-                                                  context, errorMessage));
-                                    }
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return _globalWidget.errorDialog(
+                                              context, response["message"]);
+                                        });
                                   }
-                                } else {
+                                }
+                              } else {
+                                var errorMessage = await controller
+                                    .searchJobsForSend(value);
+                                if (errorMessage.isNotEmpty) {
                                   showDialog(
                                       context: context,
-                                      builder: (context) {
-                                        return _globalWidget.errorDialog(
-                                            context, "สแกนบาร์โค้ดไม่สำเร็จ ",
-                                            title2: '$value');
-                                      });
+                                      builder: (context) =>
+                                          _globalWidget.errorDialog(
+                                              context, errorMessage));
                                 }
-                              },
-                              paddingAll: 10,
-                              bordered: false,
-                              color: Colors.blue,
-                              child: Icon(
-                                FontAwesomeIcons.camera,
-                                color: Colors.white,
-                                size: 20,
-                              ))
-                        ],
-                      ),
-                    ),
+                              }
+                            } else {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return _globalWidget.errorDialog(
+                                        context, "สแกนบาร์โค้ดไม่สำเร็จ ",
+                                        title2: '$value');
+                                  });
+                            }
+                          },
+                          paddingAll: 10,
+                          bordered: false,
+                          color: Colors.grey.shade200,
+                          child: Lottie.asset('assets/animations/lottie/barcode-scanner.json'))
+                    ],
                   ),
                 ),
                 curve: Curves.easeInOutSine,

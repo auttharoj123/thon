@@ -64,8 +64,12 @@ class API {
   Future<Map<String, dynamic>> login(String username, String password) async {
     var parsedData;
     try {
+      var prefs = await SharedPreferences.getInstance();
+      var deviceId = prefs.getString("deviceId");
+      var fcmToken = prefs.getString("fcmToken");
+
       final response = await client.post("$baseUrl/auth/login".toUri(),
-          body: jsonEncode({'login_name': username, 'password': password}));
+          body: jsonEncode({'login_name': username, 'password': password , 'device_id' : deviceId , 'fcm_token' : fcmToken}));
       if (response.statusCode == 200) {
         parsedData =
             jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
@@ -231,9 +235,6 @@ class API {
 
   Future<Map<String, dynamic>> updateNonUpdatedJob(
       NonUpdatedJob nonUpdatedJobs) async {
-    // for (var i = 0; i < nonUpdatedJobs.length; i++) {
-
-    // }
     try {
       final cache = await SharedPreferences.getInstance();
       Map<String, String> headers = {
@@ -262,6 +263,7 @@ class API {
       request.fields['specialRemark'] = nonUpdatedJobs.specialRemark ?? "";
       request.fields['latitude'] = nonUpdatedJobs.latitude ?? "";
       request.fields['longitude'] = nonUpdatedJobs.longitude ?? "";
+      request.fields['deviceId'] = cache.getString("deviceId") ?? "";
 
       if (nonUpdatedJobs.signImagePath.isNotEmpty) {
         var file = File(nonUpdatedJobs.signImagePath);
