@@ -113,7 +113,6 @@ class JobDetail extends _JobDetail
     int orderStatus,
     int directionType,
     String barcode,
-    String jobNumber,
     int customerId,
     String customerName,
     int statusFromServer,
@@ -136,6 +135,7 @@ class JobDetail extends _JobDetail
     DateTime deliveryDocumentDate,
     int qty,
     DateTime receiveDate, {
+    String jobNumber = "",
     bool isUpdatedFailed = false,
     String? imgPath,
     DateTime? latestUpdateTime,
@@ -148,6 +148,7 @@ class JobDetail extends _JobDetail
   }) {
     if (!_defaultsSet) {
       _defaultsSet = RealmObjectBase.setDefaults<JobDetail>({
+        'jobNumber': "",
         'isUpdatedFailed': false,
       });
     }

@@ -259,81 +259,6 @@ flutter:
     #Profiles
     - assets/images/profile/
 
-
-    #Shopping
-    - assets/images/apps/shopping/
-    - assets/images/apps/shopping/product/
-    - assets/images/apps/shopping/offer/
-    - assets/images/apps/shopping/camera/
-    - assets/images/apps/shopping/vector/
-
-    #Shopping2
-    - assets/images/apps/shopping2/icons/
-    - assets/images/apps/shopping2/images/
-    - lib/full_apps/shopping/data/
-
-
-    #Brand
-    - assets/brand/
-
-    #Hotel
-    - assets/images/apps/hotel/
-
-    #Places
-    - assets/images/place/
-
-    #Music
-    - assets/images/apps/music/
-
-    #Food
-    - assets/images/apps/food/
-
-    #estate
-    - assets/images/apps/estate/
-
-    #Course
-    - assets/images/apps/course/
-
-    #Chat
-    - assets/images/apps/chat/
-
-    #Social
-    - assets/images/apps/social/
-
-    #Other
-    - assets/images/all/
-
-    #Event
-    - assets/images/apps/event/
-
-
-    ###################---------------------- Custom Apps -------------------------#################
-
-    ##Grocery
-    - assets/images/apps/grocery/
-
-    ##homemade
-    - assets/images/apps/homemade/
-    - assets/images/apps/homemade/products/
-    - assets/images/apps/homemade/category/
-    - assets/images/apps/homemade/shop/
-    - lib/apps/homemade/data/
-
-    ##dating
-    - assets/images/apps/dating/
-
-    ##Muvi
-    - assets/images/apps/muvi/
-    - lib/apps/muvi/data/
-
-    ##CustomApps
-    - assets/images/apps/cookify/
-    - assets/images/apps/grocery/
-    - assets/images/apps/medicare/
-
-    ##Learning  (Material Design 3)
-    - assets/images/apps/learning/images/
-    - assets/images/apps/learning/icons/
     - lib/m3/learning/data/
 
     ##Cookify (Material Design 3)
@@ -342,23 +267,8 @@ flutter:
     ##Estate (Material Design 3)
     - lib/m3/estate/data/
 
-    ##Dating (Material Design 3)
-    - lib/apps/dating/data/
-
-    #Illustration
-    - assets/illustration/food/
-    - assets/illustration/shopping/
-    - assets/illustration/hotel/
-    - assets/illustration/music/
-
-    #Month backgrounds
-    - assets/images/month_background/
-
     #Languages
     - assets/lang/
-
-    #Icons
-    - assets/icons/
 
     #Rive Animations
     - assets/animations/rive/
@@ -372,21 +282,6 @@ flutter:
     ###################---------------------- Full Apps -------------------------#################
 
     # Data
-
-    #NFT
-    - assets/images/full_apps/nft/icons/
-    - assets/images/full_apps/nft/images/
-    - lib/full_apps/nft/data/
-
-    #Rental
-    - lib/full_apps/rental_service/data/
-    - assets/images/full_apps/rental_service/images/
-    - assets/images/full_apps/rental_service/icons/
-
-    #Shopping Manager
-    - assets/images/full_apps/shopping/
-    - assets/images/full_apps/shopping/icons/
-    - lib/full_apps/shopping_manager/data/
 
     #Sailom
     - assets/images/sailom/

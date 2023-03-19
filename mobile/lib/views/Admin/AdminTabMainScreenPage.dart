@@ -5,11 +5,12 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:slpod/controllers/TabMainController.dart';
 import 'package:flutter/material.dart';
 import 'package:flutx/flutx.dart';
-import 'package:slpod/screens/other/page_not_found_screen.dart';
+import 'package:slpod/repositories/job_repostitory.dart';
 import 'package:slpod/theme/app_theme.dart';
 import 'package:slpod/utils/UpdateJobForegroundService.dart';
 import 'package:slpod/views/SLState.dart';
 import 'package:slpod/views/TabScreen/NonUpdateJobLogHistoryScreen.dart';
+import 'package:workmanager/workmanager.dart';
 import '../TabScreen/HomeScreen.dart';
 import '../TabScreen/ProfileScreen.dart';
 
@@ -36,17 +37,13 @@ class _AdminTabMainScreenPageState extends SLState<AdminTabMainScreenPage>
     setState(() {
       _appLifecycleState = state;
     });
-
-    if (state == AppLifecycleState.resumed) {
-      UpdateJobForegroundService.startForegroundTask();
-    } else {
-      UpdateJobForegroundService.stopForegroundTask();
-    }
   }
 
   @override
   void initState() {
     super.initState();
+    JobRepository.removeAllNonUpdatedJob(withoutLoginName: true);
+
     _pageController = PageController();
     theme = AppTheme.sailomLightTheme;
     controller = FxControllerStore.putOrFind(TabMainController());
@@ -59,6 +56,17 @@ class _AdminTabMainScreenPageState extends SLState<AdminTabMainScreenPage>
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
     WidgetsBinding.instance.addObserver(this);
+
+    Workmanager().registerPeriodicTask(
+      "periodic-task-identifier",
+      "simplePeriodicTask",
+      constraints: Constraints(
+        networkType: NetworkType.connected,
+        requiresCharging: false,
+        requiresBatteryNotLow: false,
+      ),
+      frequency: Duration(minutes: 15),
+    );
   }
 
   Future<void> _updateConnectionStatus(ConnectivityResult result) async {
@@ -71,6 +79,7 @@ class _AdminTabMainScreenPageState extends SLState<AdminTabMainScreenPage>
   void dispose() {
     FxControllerStore.delete(controller);
     WidgetsBinding.instance.removeObserver(this);
+    UpdateJobForegroundService.stopForegroundTask();
     super.dispose();
   }
 
@@ -95,8 +104,8 @@ class _AdminTabMainScreenPageState extends SLState<AdminTabMainScreenPage>
                   },
                   children: <Widget>[
                     HomeScreen(),
-                    PageNotFoundScreen(),
-                    PageNotFoundScreen(),
+                    // PageNotFoundScreen(),
+                    // PageNotFoundScreen(),
                     NonUpdateJobLogHistoryScreen(),
                     ProfileScreen()
                   ],
@@ -208,6 +217,48 @@ class _AdminTabMainScreenPageState extends SLState<AdminTabMainScreenPage>
                             ),
                           ),
                           FxSpacing.height(20),
+                          // GestureDetector(
+                          //   onTap: () {
+                          //     setState(() {
+                          //       controller.selectedMenu = 2;
+                          //     });
+                          //     _pageController.jumpToPage(1);
+                          //   },
+                          //   child: AnimatedContainer(
+                          //     duration: Duration(milliseconds: 500),
+                          //     padding: EdgeInsets.all(15),
+                          //     decoration: BoxDecoration(
+                          //       borderRadius: BorderRadius.circular(10),
+                          //       color: controller.selectedMenu == 2
+                          //           ? Colors.blue.shade600
+                          //           : Colors.transparent,
+                          //     ),
+                          //     child: Icon(FontAwesomeIcons.bell,
+                          //         color: Colors.white),
+                          //   ),
+                          // ),
+                          // FxSpacing.height(20),
+                          // GestureDetector(
+                          //   onTap: () {
+                          //     setState(() {
+                          //       controller.selectedMenu = 3;
+                          //     });
+                          //     _pageController.jumpToPage(2);
+                          //   },
+                          //   child: AnimatedContainer(
+                          //     duration: Duration(milliseconds: 500),
+                          //     padding: EdgeInsets.all(15),
+                          //     decoration: BoxDecoration(
+                          //       borderRadius: BorderRadius.circular(10),
+                          //       color: controller.selectedMenu == 3
+                          //           ? Colors.blue.shade600
+                          //           : Colors.transparent,
+                          //     ),
+                          //     child: Icon(MdiIcons.chatOutline,
+                          //         color: Colors.white),
+                          //   ),
+                          // ),
+                          // FxSpacing.height(20),
                           GestureDetector(
                             onTap: () {
                               setState(() {
@@ -224,48 +275,6 @@ class _AdminTabMainScreenPageState extends SLState<AdminTabMainScreenPage>
                                     ? Colors.blue.shade600
                                     : Colors.transparent,
                               ),
-                              child: Icon(FontAwesomeIcons.bell,
-                                  color: Colors.white),
-                            ),
-                          ),
-                          FxSpacing.height(20),
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                controller.selectedMenu = 3;
-                              });
-                              _pageController.jumpToPage(2);
-                            },
-                            child: AnimatedContainer(
-                              duration: Duration(milliseconds: 500),
-                              padding: EdgeInsets.all(15),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: controller.selectedMenu == 3
-                                    ? Colors.blue.shade600
-                                    : Colors.transparent,
-                              ),
-                              child: Icon(MdiIcons.chatOutline,
-                                  color: Colors.white),
-                            ),
-                          ),
-                          FxSpacing.height(20),
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                controller.selectedMenu = 4;
-                              });
-                              _pageController.jumpToPage(3);
-                            },
-                            child: AnimatedContainer(
-                              duration: Duration(milliseconds: 500),
-                              padding: EdgeInsets.all(15),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: controller.selectedMenu == 4
-                                    ? Colors.blue.shade600
-                                    : Colors.transparent,
-                              ),
                               child:
                                   Icon(MdiIcons.history, color: Colors.white),
                             ),
@@ -275,11 +284,11 @@ class _AdminTabMainScreenPageState extends SLState<AdminTabMainScreenPage>
                           FxContainer(
                             onTap: () {
                               setState(() {
-                                controller.selectedMenu = 5;
+                                controller.selectedMenu = 3;
                               });
-                              _pageController.jumpToPage(4);
+                              _pageController.jumpToPage(2);
                             },
-                            color: controller.selectedMenu == 5
+                            color: controller.selectedMenu == 3
                                 ? Colors.blue.shade600
                                 : Colors.transparent,
                             child: Icon(FontAwesomeIcons.gear,

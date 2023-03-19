@@ -16,17 +16,17 @@ import 'package:geolocator/geolocator.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:realm/realm.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:slpod/constants/SLConsts.dart';
 import 'package:slpod/controllers/AppController.dart';
 import 'package:slpod/handler/UpdateJobTaskHandler.dart';
-import 'package:slpod/homes/homes_screen.dart';
 import 'package:slpod/localizations/app_localization_delegate.dart';
 import 'package:slpod/localizations/language.dart';
+import 'package:slpod/repositories/job_repostitory.dart';
 import 'package:slpod/theme/app_notifier.dart';
 import 'package:slpod/theme/app_theme.dart';
 import 'package:slpod/utils/UpdateJobForegroundService.dart';
 import 'package:slpod/utils/navigation_helper.dart';
 import 'package:slpod/views/Admin/AdminTabMainScreenPage.dart';
-import 'package:slpod/views/Driver/TabMainScreenPage.dart';
 import 'package:slpod/views/JobDetailScreenPage.dart';
 import 'package:slpod/views/LoginScreenPage.dart';
 import 'package:flutter/material.dart';
@@ -37,12 +37,27 @@ import 'package:slpod/views/RootScreenPage.dart';
 import 'package:slpod/views/SendJobScreenPage.dart';
 import 'package:slpod/views/SplashScreenPage.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:workmanager/workmanager.dart';
 import 'firebase_options.dart';
 
 @pragma('vm:entry-point')
 void startCallback() {
   // The setTaskHandler function must be called to handle the task in the background.
   FlutterForegroundTask.setTaskHandler(UpdateJobTaskHandler());
+}
+
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    try {
+      await UpdateJobForegroundService.initlizeForegroundTask(startCallback);
+      await UpdateJobForegroundService.startForegroundTask();
+    } catch (err) {
+      throw Exception(err);
+    }
+
+    return Future.value(true);
+  });
 }
 
 Future<void> main() async {
@@ -53,6 +68,12 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await UpdateJobForegroundService.initlizeForegroundTask(startCallback);
+  await Workmanager().initialize(
+      callbackDispatcher, // The top level function, aka callbackDispatcher
+      isInDebugMode:
+          false // If enabled it will post a notification whenever the task is running. Handy for debugging tasks
+      );
+
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   final prefs = await SharedPreferences.getInstance();
   final fcmToken = await FirebaseMessaging.instance.getToken();
@@ -129,6 +150,7 @@ class _SLAppState extends State<SLApp> {
       deviceData["packageInfo.packageName"] = packageInfo.packageName;
       deviceData["packageInfo.version"] = packageInfo.version;
       deviceData["packageInfo.buildNumber"] = packageInfo.buildNumber;
+      deviceData["app.version"] = SLAppl.VERSION;
 
       prefs.setString("deviceInfo", jsonEncode(deviceData));
     } on PlatformException {
@@ -242,12 +264,12 @@ class _SLAppState extends State<SLApp> {
                 routes: {
                   '/': (context) => RootScreenPage(),
                   '/login': (context) => LoginScreenPage(),
-                  '/home': (context) => HomesScreen(),
+                  // '/home': (context) => HomesScreen(),
                   '/job_detail': (context) => JobDetailScreenPage(),
                   '/pre_initialize': (context) => LoadingScreenPage(),
                   '/admin_home': (context) => AdminTabMainScreenPage(),
                   '/send_job': (context) => SendJobScreenPage(),
-                  '/driver_home': (context) => TabMainScreenPage(),
+                  // '/driver_home': (context) => TabMainScreenPage(),
                 },
                 supportedLocales: Language.getLocales(),
               );

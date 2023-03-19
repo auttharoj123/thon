@@ -131,6 +131,75 @@ class GlobalWidget {
         ));
   }
 
+  Widget infoYesNoDialog(context, title,
+      {title2 = "", void Function()? acceptPressed}) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8.0))),
+      child: Container(
+        padding: FxSpacing.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  margin: FxSpacing.right(16),
+                  child: Icon(
+                    FontAwesomeIcons.circleInfo,
+                    size: 28,
+                    color: Colors.blue.shade700,
+                  ),
+                ),
+                FxSpacing.width(8),
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                        style: FxTextStyle.bodyLarge(
+                            fontWeight: 500, letterSpacing: 0.2),
+                        children: <TextSpan>[
+                          TextSpan(text: title),
+                          TextSpan(
+                              text: title2,
+                              style: TextStyle(fontWeight: FontWeight.w600)),
+                        ]),
+                  ),
+                )
+              ],
+            ),
+            Container(
+                margin: FxSpacing.top(8),
+                alignment: AlignmentDirectional.centerEnd,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    FxButton.text(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: FxText.bodyMedium("ยกเลิก",
+                            fontWeight: 700, letterSpacing: 0.4)),
+                    FxSpacing.width(10),
+                    FxButton(
+                        backgroundColor: SLColor.LIGHTBLUE2,
+                        borderRadiusAll: 4,
+                        elevation: 0,
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          acceptPressed?.call();
+                        },
+                        child: FxText.bodyMedium("ตกลง",
+                            letterSpacing: 0.4, color: Colors.white)),
+                  ],
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget errorYesNoDialog(context, title,
       {title2 = "", void Function()? acceptPressed}) {
     return Dialog(
@@ -188,6 +257,7 @@ class GlobalWidget {
                         elevation: 0,
                         onPressed: () {
                           Navigator.of(context).pop();
+                          acceptPressed?.call();
                         },
                         child: FxText.bodyMedium("ตกลง",
                             letterSpacing: 0.4, color: Colors.white)),
@@ -207,13 +277,15 @@ class GlobalWidget {
       child: Container(
         color: Colors.transparent,
         child: Center(
-          child: Column(
-            children: [
-              Lottie.asset("assets/animations/lottie/loading.json"),
-              FxText("กำลังบันทึกข้อมูล...", color: Colors.white,)
-            ],
-          )
-        ),
+            child: Column(
+          children: [
+            Lottie.asset("assets/animations/lottie/loading.json"),
+            FxText(
+              "กำลังบันทึกข้อมูล...",
+              color: Colors.white,
+            )
+          ],
+        )),
       ),
     );
   }

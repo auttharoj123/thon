@@ -8,8 +8,10 @@ part of 'NonUpdatedJob.dart';
 
 _NonUpdatedJob _$NonUpdatedJobFromJson(Map<String, dynamic> json) =>
     _NonUpdatedJob()
+      ..id = json['id'] as String
       ..jobIds = json['jobIds'] as String
       ..barcodes = json['barcodes'] as String
+      ..sendJobType = json['sendJobType'] as int
       ..targetOrderStatus = json['targetOrderStatus'] as int
       ..targetRemarkCategoryId = json['targetRemarkCategoryId'] as int
       ..specialRemark = json['specialRemark'] as String?
@@ -22,12 +24,15 @@ _NonUpdatedJob _$NonUpdatedJobFromJson(Map<String, dynamic> json) =>
           (json['imagesPath'] as List<dynamic>).map((e) => e as String).toList()
       ..isUploadSuccess = json['isUploadSuccess'] as bool
       ..createdDate = DateTime.parse(json['createdDate'] as String)
-      ..updatedDate = DateTime.parse(json['updatedDate'] as String);
+      ..updatedDate = DateTime.parse(json['updatedDate'] as String)
+      ..loginName = json['loginName'] as String;
 
 Map<String, dynamic> _$NonUpdatedJobToJson(_NonUpdatedJob instance) =>
     <String, dynamic>{
+      'id': instance.id,
       'jobIds': instance.jobIds,
       'barcodes': instance.barcodes,
+      'sendJobType': instance.sendJobType,
       'targetOrderStatus': instance.targetOrderStatus,
       'targetRemarkCategoryId': instance.targetRemarkCategoryId,
       'specialRemark': instance.specialRemark,
@@ -40,6 +45,7 @@ Map<String, dynamic> _$NonUpdatedJobToJson(_NonUpdatedJob instance) =>
       'isUploadSuccess': instance.isUploadSuccess,
       'createdDate': instance.createdDate.toIso8601String(),
       'updatedDate': instance.updatedDate.toIso8601String(),
+      'loginName': instance.loginName,
     };
 
 // **************************************************************************
@@ -49,23 +55,28 @@ Map<String, dynamic> _$NonUpdatedJobToJson(_NonUpdatedJob instance) =>
 class NonUpdatedJob extends _NonUpdatedJob
     with RealmEntity, RealmObjectBase, RealmObject {
   NonUpdatedJob(
+    String id,
     String jobIds,
     String barcodes,
+    int sendJobType,
     int targetOrderStatus,
     int targetRemarkCategoryId,
     int selectedComplacencyLevel,
     String signImagePath,
     bool isUploadSuccess,
     DateTime createdDate,
-    DateTime updatedDate, {
+    DateTime updatedDate,
+    String loginName, {
     String? specialRemark,
     String? latitude,
     String? longitude,
     String? result,
     Iterable<String> imagesPath = const [],
   }) {
+    RealmObjectBase.set(this, 'id', id);
     RealmObjectBase.set(this, 'jobIds', jobIds);
     RealmObjectBase.set(this, 'barcodes', barcodes);
+    RealmObjectBase.set(this, 'sendJobType', sendJobType);
     RealmObjectBase.set(this, 'targetOrderStatus', targetOrderStatus);
     RealmObjectBase.set(this, 'targetRemarkCategoryId', targetRemarkCategoryId);
     RealmObjectBase.set(this, 'specialRemark', specialRemark);
@@ -78,11 +89,17 @@ class NonUpdatedJob extends _NonUpdatedJob
     RealmObjectBase.set(this, 'isUploadSuccess', isUploadSuccess);
     RealmObjectBase.set(this, 'createdDate', createdDate);
     RealmObjectBase.set(this, 'updatedDate', updatedDate);
+    RealmObjectBase.set(this, 'loginName', loginName);
     RealmObjectBase.set<RealmList<String>>(
         this, 'imagesPath', RealmList<String>(imagesPath));
   }
 
   NonUpdatedJob._();
+
+  @override
+  String get id => RealmObjectBase.get<String>(this, 'id') as String;
+  @override
+  set id(String value) => RealmObjectBase.set(this, 'id', value);
 
   @override
   String get jobIds => RealmObjectBase.get<String>(this, 'jobIds') as String;
@@ -94,6 +111,11 @@ class NonUpdatedJob extends _NonUpdatedJob
       RealmObjectBase.get<String>(this, 'barcodes') as String;
   @override
   set barcodes(String value) => RealmObjectBase.set(this, 'barcodes', value);
+
+  @override
+  int get sendJobType => RealmObjectBase.get<int>(this, 'sendJobType') as int;
+  @override
+  set sendJobType(int value) => RealmObjectBase.set(this, 'sendJobType', value);
 
   @override
   int get targetOrderStatus =>
@@ -176,6 +198,12 @@ class NonUpdatedJob extends _NonUpdatedJob
       RealmObjectBase.set(this, 'updatedDate', value);
 
   @override
+  String get loginName =>
+      RealmObjectBase.get<String>(this, 'loginName') as String;
+  @override
+  set loginName(String value) => RealmObjectBase.set(this, 'loginName', value);
+
+  @override
   Stream<RealmObjectChanges<NonUpdatedJob>> get changes =>
       RealmObjectBase.getChanges<NonUpdatedJob>(this);
 
@@ -188,8 +216,10 @@ class NonUpdatedJob extends _NonUpdatedJob
     RealmObjectBase.registerFactory(NonUpdatedJob._);
     return const SchemaObject(
         ObjectType.realmObject, NonUpdatedJob, 'NonUpdatedJob', [
+      SchemaProperty('id', RealmPropertyType.string, primaryKey: true),
       SchemaProperty('jobIds', RealmPropertyType.string),
       SchemaProperty('barcodes', RealmPropertyType.string),
+      SchemaProperty('sendJobType', RealmPropertyType.int),
       SchemaProperty('targetOrderStatus', RealmPropertyType.int),
       SchemaProperty('targetRemarkCategoryId', RealmPropertyType.int),
       SchemaProperty('specialRemark', RealmPropertyType.string, optional: true),
@@ -203,6 +233,7 @@ class NonUpdatedJob extends _NonUpdatedJob
       SchemaProperty('isUploadSuccess', RealmPropertyType.bool),
       SchemaProperty('createdDate', RealmPropertyType.timestamp),
       SchemaProperty('updatedDate', RealmPropertyType.timestamp),
+      SchemaProperty('loginName', RealmPropertyType.string),
     ]);
   }
 }

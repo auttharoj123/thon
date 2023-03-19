@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutx/flutx.dart';
+import 'package:slpod/constants/SLConsts.dart';
 import 'package:slpod/controllers/ProfileController.dart';
 import 'package:slpod/theme/app_theme.dart';
 import 'package:slpod/theme/constant.dart';
+import 'package:slpod/views/Reuseable/GlobalWidget.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -16,6 +18,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late ThemeData theme;
   late ProfileController controller;
   late OutlineInputBorder outlineInputBorder;
+  GlobalWidget _globalWidget = GlobalWidget();
 
   @override
   void initState() {
@@ -44,13 +47,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     titleRow(),
                     FxSpacing.height(20),
-                    statistics(),
-                    FxSpacing.height(24),
-                    status(),
-                    FxSpacing.height(24),
+                    // statistics(),
+                    // FxSpacing.height(24),
+                    // status(),
+                    // FxSpacing.height(24),
+                    account(),
+                    FxSpacing.height(32),
                     other(),
                     FxSpacing.height(32),
-                    account()
+                    logout()
                   ],
                 ),
               ),
@@ -62,16 +67,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget titleRow() {
     return Row(
       children: [
-        FxContainer(
-          width: 10,
-          height: 24,
-          color: theme.colorScheme.primaryContainer,
-          borderRadiusAll: 2,
-        ),
-        FxSpacing.width(8),
-        FxText.titleMedium(
-          "โปรไฟล์",
-          fontWeight: 600,
+        Row(
+          children: [
+            Container(
+              padding: FxSpacing.xy(0, 10),
+              child: _globalWidget.menuButton(),
+            ),
+            FxSpacing.width(20),
+            FxText.titleLarge("โปรไฟล์", color: Colors.black)
+          ],
         ),
       ],
     );
@@ -283,12 +287,162 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget account() {
+    return Row(
+      children: [
+        Container(
+          width: 60,
+          height: 60,
+          child: CircleAvatar(
+            backgroundImage:
+                AssetImage('assets/images/profile/avatar_place.png'),
+          ),
+        ),
+        FxSpacing.width(20),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            FxText("${controller.appController.loginName}"),
+            FxText(
+                "${controller.appController.fName} ${controller.appController.lName}")
+          ],
+        )
+      ],
+    );
+    // return Column(
+    //   crossAxisAlignment: CrossAxisAlignment.start,
+    //   children: [
+    //     FxText.bodySmall(
+    //       'My Account',
+    //       fontWeight: 600,
+    //       muted: true,
+    //     ),
+    //     FxSpacing.height(20),
+    //     Row(
+    //       children: [
+    //         FxContainer(
+    //           paddingAll: 8,
+    //           color: Constant.softColors.blue.color,
+    //           child: Icon(
+    //             Icons.person,
+    //             size: 20,
+    //             color: Constant.softColors.blue.onColor,
+    //           ),
+    //         ),
+    //         FxSpacing.width(16),
+    //         Expanded(child: FxText.bodyMedium('Login Name')),
+    //         FxSpacing.width(16),
+    //         FxText.bodyLarge(
+    //           "",
+    //           color: Colors.grey,
+    //         )
+    //       ],
+    //     ),
+    //     FxSpacing.height(20),
+    //     Row(
+    //       children: [
+    //         FxContainer(
+    //           paddingAll: 8,
+    //           color: Constant.softColors.blue.color,
+    //           child: Icon(
+    //             Icons.person,
+    //             size: 20,
+    //             color: Constant.softColors.blue.onColor,
+    //           ),
+    //         ),
+    //         FxSpacing.width(16),
+    //         Expanded(child: FxText.bodyMedium('ชื่อ')),
+    //         FxSpacing.width(16),
+    //         FxText.bodyLarge(
+    //           "",
+    //           color: Colors.grey,
+    //         )
+    //       ],
+    //     ),
+    //     FxSpacing.height(20),
+    //     Row(
+    //       children: [
+    //         FxContainer(
+    //           paddingAll: 8,
+    //           color: Constant.softColors.blue.color,
+    //           child: Icon(
+    //             Icons.person,
+    //             size: 20,
+    //             color: Constant.softColors.blue.onColor,
+    //           ),
+    //         ),
+    //         FxSpacing.width(16),
+    //         Expanded(child: FxText.bodyMedium('นามสกุล')),
+    //         FxSpacing.width(16),
+    //         FxText.bodyLarge(
+    //           "",
+    //           color: Colors.grey,
+    //         )
+    //       ],
+    //     ),
+    // FxSpacing.height(16),
+    // Row(
+    //   children: [
+    //     FxContainer(
+    //       paddingAll: 8,
+    //       color: Constant.softColors.green.color,
+    //       child: Icon(
+    //         Icons.location_on_outlined,
+    //         size: 20,
+    //         color: Constant.softColors.green.onColor,
+    //       ),
+    //     ),
+    //     FxSpacing.width(16),
+    //     Expanded(child: FxText.bodyMedium('Shop Location')),
+    //     FxSpacing.width(16),
+    //     Icon(
+    //       FeatherIcons.chevronRight,
+    //       size: 20,
+    //     )
+    //   ],
+    // ),
+    // FxSpacing.height(16),
+    // Row(
+    //   children: [
+    //     FxContainer(
+    //       paddingAll: 8,
+    //       color: Constant.softColors.orange.color,
+    //       child: Icon(
+    //         Icons.privacy_tip_outlined,
+    //         size: 20,
+    //         color: Constant.softColors.orange.onColor,
+    //       ),
+    //     ),
+    //     FxSpacing.width(16),
+    //     Expanded(child: FxText.bodyMedium('Privacy')),
+    //     FxSpacing.width(16),
+    //     Row(
+    //       children: [
+    //         FxText.bodySmall(
+    //           'Action Needed',
+    //           color: theme.colorScheme.error,
+    //           fontWeight: 600,
+    //         ),
+    //         FxSpacing.width(4),
+    //         Icon(
+    //           FeatherIcons.chevronRight,
+    //           size: 18,
+    //           color: theme.colorScheme.error,
+    //         )
+    //       ],
+    //     )
+    //   ],
+    // ),
+    //   ],
+    // );
+  }
+
   Widget other() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         FxText.bodySmall(
-          'Activity',
+          'Settings',
           fontWeight: 600,
           muted: true,
         ),
@@ -299,114 +453,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
               paddingAll: 8,
               color: Constant.softColors.blue.color,
               child: Icon(
-                Icons.account_balance_wallet_outlined,
+                Icons.settings,
                 size: 20,
                 color: Constant.softColors.blue.onColor,
               ),
             ),
             FxSpacing.width(16),
-            Expanded(child: FxText.bodyMedium('Payments')),
+            Expanded(child: FxText.bodyMedium('Version')),
             FxSpacing.width(16),
-            Row(
-              children: [
-                FxContainer.rounded(
-                  height: 24,
-                  width: 24,
-                  paddingAll: 0,
-                  color: theme.colorScheme.primary,
-                  child: Center(
-                    child: FxText.bodySmall(
-                      '4',
-                      color: theme.colorScheme.onPrimary,
-                    ),
-                  ),
-                ),
-                FxSpacing.width(4),
-                Icon(
-                  FeatherIcons.chevronRight,
-                  size: 18,
-                  color: theme.colorScheme.primary,
-                )
-              ],
+            FxText.bodyLarge(
+              SLAppl.VERSION,
+              color: Colors.grey,
             )
           ],
         ),
-        FxSpacing.height(16),
-        Row(
-          children: [
-            FxContainer(
-              paddingAll: 8,
-              color: Constant.softColors.green.color,
-              child: Icon(
-                Icons.location_on_outlined,
-                size: 20,
-                color: Constant.softColors.green.onColor,
-              ),
-            ),
-            FxSpacing.width(16),
-            Expanded(child: FxText.bodyMedium('Shop Location')),
-            FxSpacing.width(16),
-            Icon(
-              FeatherIcons.chevronRight,
-              size: 20,
-            )
-          ],
-        ),
-        FxSpacing.height(16),
-        Row(
-          children: [
-            FxContainer(
-              paddingAll: 8,
-              color: Constant.softColors.orange.color,
-              child: Icon(
-                Icons.privacy_tip_outlined,
-                size: 20,
-                color: Constant.softColors.orange.onColor,
-              ),
-            ),
-            FxSpacing.width(16),
-            Expanded(child: FxText.bodyMedium('Privacy')),
-            FxSpacing.width(16),
-            Row(
-              children: [
-                FxText.bodySmall(
-                  'Action Needed',
-                  color: theme.colorScheme.error,
-                  fontWeight: 600,
-                ),
-                FxSpacing.width(4),
-                Icon(
-                  FeatherIcons.chevronRight,
-                  size: 18,
-                  color: theme.colorScheme.error,
-                )
-              ],
-            )
-          ],
-        ),
+        // FxSpacing.height(16),
+        // Row(
+        //   children: [
+        //     FxContainer(
+        //       paddingAll: 8,
+        //       color: Constant.softColors.green.color,
+        //       child: Icon(
+        //         Icons.location_on_outlined,
+        //         size: 20,
+        //         color: Constant.softColors.green.onColor,
+        //       ),
+        //     ),
+        //     FxSpacing.width(16),
+        //     Expanded(child: FxText.bodyMedium('Shop Location')),
+        //     FxSpacing.width(16),
+        //     Icon(
+        //       FeatherIcons.chevronRight,
+        //       size: 20,
+        //     )
+        //   ],
+        // ),
+        // FxSpacing.height(16),
+        // Row(
+        //   children: [
+        //     FxContainer(
+        //       paddingAll: 8,
+        //       color: Constant.softColors.orange.color,
+        //       child: Icon(
+        //         Icons.privacy_tip_outlined,
+        //         size: 20,
+        //         color: Constant.softColors.orange.onColor,
+        //       ),
+        //     ),
+        //     FxSpacing.width(16),
+        //     Expanded(child: FxText.bodyMedium('Privacy')),
+        //     FxSpacing.width(16),
+        //     Row(
+        //       children: [
+        //         FxText.bodySmall(
+        //           'Action Needed',
+        //           color: theme.colorScheme.error,
+        //           fontWeight: 600,
+        //         ),
+        //         FxSpacing.width(4),
+        //         Icon(
+        //           FeatherIcons.chevronRight,
+        //           size: 18,
+        //           color: theme.colorScheme.error,
+        //         )
+        //       ],
+        //     )
+        //   ],
+        // ),
       ],
     );
   }
 
-  Widget account() {
+  Widget logout() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FxText.bodySmall(
-          'My Account',
-          fontWeight: 600,
-          xMuted: true,
-        ),
-        FxSpacing.height(8),
-        FxButton.text(
-            padding: FxSpacing.zero,
-            onPressed: () {},
-            child: FxText.bodyMedium(
-              'Switch to another account',
-              color: theme.colorScheme.primary,
-              fontWeight: 600,
-            )),
-        FxSpacing.height(20),
+        // FxText.bodySmall(
+        //   'My Account',
+        //   fontWeight: 600,
+        //   xMuted: true,
+        // ),
+        // FxSpacing.height(8),
+        // FxButton.text(
+        //     padding: FxSpacing.zero,
+        //     onPressed: () {},
+        //     child: FxText.bodyMedium(
+        //       'Switch to another account',
+        //       color: theme.colorScheme.primary,
+        //       fontWeight: 600,
+        //     )),
+        // FxSpacing.height(20),
         Center(
           child: FxButton(
               backgroundColor: theme.colorScheme.errorContainer,

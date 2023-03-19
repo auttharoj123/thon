@@ -35,6 +35,9 @@ class PreLoadingController extends BaseController {
       //appController.mstTypes = await appController.api.fetchRemark();
 
       var userInfoResp = await appController.api.fetchUserInfo();
+      appController.loginName = userInfoResp["result"]["loginname"];
+      appController.fName = userInfoResp["result"]["fname"];
+      appController.lName = userInfoResp["result"]["lname"];
       appController.roleAdmin = userInfoResp["result"]["roleAdmin"];
 
       Navigator.of(context).pushReplacementNamed("/admin_home");

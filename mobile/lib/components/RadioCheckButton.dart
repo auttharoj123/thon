@@ -29,16 +29,23 @@ class _RadioCheckButtonState extends State<RadioCheckButton>
 
   @override
   void didUpdateWidget(covariant RadioCheckButton oldWidget) {
-    _controller.animateTo(widget.isChecked ? 1 : 0, duration: Duration(milliseconds: 400));
+    _controller.animateTo(widget.isChecked ? 1 : 0,
+        duration: Duration(milliseconds: 400));
     super.didUpdateWidget(oldWidget);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (mounted) {
+      _controller.animateTo(widget.isChecked ? 1 : 0,duration: Duration(seconds: 0));
+    }
     return Lottie.asset(
       'assets/animations/lottie/radio-button.json',
       controller: _controller,
       repeat: false,
     );
   }
+
+  // @override
+  // bool get wantKeepAlive => true;
 }

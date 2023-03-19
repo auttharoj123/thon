@@ -205,7 +205,7 @@ class _LoginScreenState extends State<LoginScreenPage> {
     return SafeArea(
       child: Align(
         alignment: Alignment.centerLeft,
-        child: FxText.headlineLarge(
+        child: FxText.headlineMedium(
           "เข้าสู่ระบบ",
           fontWeight: 500,
           fontSize: 50,

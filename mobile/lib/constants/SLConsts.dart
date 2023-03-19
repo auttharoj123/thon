@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+class SLAppl {
+  static const String VERSION = "1.0.1";
+}
+
 class SLColor {
   static const Color LIGHTBLUE1 = Color.fromRGBO(112, 172, 244, 1);
   static const Color LIGHTBLUE2 = Color.fromRGBO(95, 162, 240, 1);

@@ -1,28 +1,17 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:slpod/api/API.dart';
 import 'package:slpod/api/RequestInterceptor.dart';
-import 'package:slpod/apps/fitness/controllers/home_controller.dart';
-import 'package:slpod/constants/SLConsts.dart';
 import 'package:slpod/models/MstType.dart';
-import 'package:slpod/models/ResultResponse.dart';
 import 'package:flutter/material.dart';
 import 'package:flutx/flutx.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:slpod/models/RouteLine.dart';
+import 'package:slpod/utils/UpdateJobForegroundService.dart';
 import 'package:slpod/utils/navigation_helper.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:slpod/theme/constant.dart';
-import 'package:slpod/widgets/syncfusion/data/charts_sample_data.dart';
-import '../../apps/medicare/models/category.dart';
-import '../../apps/medicare/models/doctor.dart';
-import 'package:http/http.dart' as http;
-
-import '../models/JobDetail.dart';
+import 'package:workmanager/workmanager.dart';
 import '../views/TabScreen/HomeScreen.dart';
 import '../views/TabScreen/ProfileScreen.dart';
 
@@ -36,6 +25,9 @@ class NavItem {
 class AppController extends FxController {
   String? accessToken;
   String? refreshToken;
+  String? loginName;
+  String? fName;
+  String? lName;
   bool? roleAdmin;
 
   late List<NavItem> driverNavItems = [
@@ -62,7 +54,7 @@ class AppController extends FxController {
 
   // ignore: close_sinks
   final sendJobEventStreamController = StreamController();
-  
+
   @override
   void initState() {
     super.initState();
@@ -111,6 +103,8 @@ class AppController extends FxController {
   }
 
   Future logout() async {
+    UpdateJobForegroundService.stopForegroundTask();
+    Workmanager().cancelAll();
     await clearData();
     //FxControllerStore.delete(HomeController());
     Navigator.pushReplacementNamed(

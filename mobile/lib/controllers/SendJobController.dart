@@ -5,11 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:realm/realm.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:signature/signature.dart';
 import 'package:slpod/constants/SLConsts.dart';
-import 'dart:ui' as ui;
 import 'package:slpod/controllers/BaseController.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:slpod/extensions/extensions.dart';
 import 'package:slpod/managers/file_manager.dart';
 import 'package:slpod/models/JobDetail.dart';
@@ -17,6 +16,7 @@ import 'package:slpod/models/NonUpdatedJob.dart';
 import 'package:slpod/repositories/job_repostitory.dart';
 import 'package:slpod/utils/UpdateJobForegroundService.dart';
 import 'package:slpod/views/Reuseable/GlobalWidget.dart';
+import 'package:workmanager/workmanager.dart';
 
 class SendJobController extends BaseController {
   late int point = 0;
@@ -163,6 +163,7 @@ class SendJobController extends BaseController {
       //   update();
       // }
     } else if (currentPageState == 1) {
+      final prefs = await SharedPreferences.getInstance();
       var isSendJobRemark = args["jobType"] == SendJobType.REMARK;
 
       if (selectedImages.length == 0) {
@@ -210,12 +211,23 @@ class SendJobController extends BaseController {
       String ids = jobs.map((item) => item.id).join(",");
       List<String> imagesPath = imageFiles.map((item) => item.path).toList();
 
+      if (ids.isEmpty) {
+        showDialog(
+            context: context,
+            builder: (context) => globalWidget.errorDialog(
+                context, "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง"));
+        Navigator.of(context).pop();
+        return;
+      }
+
       var position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
 
       await JobRepository.addNonUpdatedJob(NonUpdatedJob(
+          Uuid.v4().toString(),
           ids,
           barcodes.join(','),
+          args["jobType"],
           isSendJobRemark ? JobStatus.SENDING : JobStatus.SENT,
           remarkCatId.toInt(),
           point,
@@ -223,6 +235,7 @@ class SendJobController extends BaseController {
           false,
           DateTime.now(),
           DateTime.now(),
+          prefs.getString('username')!,
           imagesPath: imagesPath,
           latitude: position.latitude.toString(),
           longitude: position.longitude.toString(),
@@ -241,8 +254,7 @@ class SendJobController extends BaseController {
       }
 
       Navigator.of(context).pop();
-
-      // appController.sendJobEventStreamController.add(true);
+      // Workmanager().registerOneOffTask("task-identifier", "simpleTask");
       UpdateJobForegroundService.startForegroundTask();
       Navigator.of(context).pop();
     }

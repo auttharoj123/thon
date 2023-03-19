@@ -88,8 +88,7 @@ class UpdateJobForegroundService {
           backgroundColor: Colors.orange,
         ),
         buttons: [
-          const NotificationButton(id: 'sendButton', text: 'Send'),
-          const NotificationButton(id: 'testButton', text: 'Test'),
+          // const NotificationButton(id: 'stopButton', text: 'Stop'),
         ],
       ),
       iosNotificationOptions: const IOSNotificationOptions(
@@ -97,8 +96,8 @@ class UpdateJobForegroundService {
         playSound: false,
       ),
       foregroundTaskOptions: const ForegroundTaskOptions(
-        // interval: 10000,
-        isOnceEvent: false,
+        // interval: 5000,
+        isOnceEvent: true,
         autoRunOnBoot: true,
         allowWakeLock: true,
         allowWifiLock: true,

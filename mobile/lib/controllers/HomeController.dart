@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:intl/intl.dart';
+import 'package:slpod/api/API.dart';
 import 'package:slpod/constants/SLConsts.dart';
 import 'package:slpod/controllers/BaseController.dart';
 import 'package:slpod/managers/JobSyncManager.dart';
@@ -42,12 +44,6 @@ class HomeController extends BaseController {
       ..add(MapEntry(JobStatus.SENT, getOrderStatusTitle(JobStatus.SENT)))
       ..add(MapEntry(JobStatus.REJECT_SENDING,
           getOrderStatusTitle(JobStatus.REJECT_SENDING)));
-
-    // _sendJobEventSubscription = appController
-    //     .sendJobEventStreamController.stream
-    //     .asBroadcastStream(onListen: (event) {
-    //   reloadAllJobs();
-    // });
 
     JobRepository.listenJobDetail((event) {
       reloadAllJobs();
@@ -118,15 +114,32 @@ class HomeController extends BaseController {
     selectedJobIds.clear();
     update();
 
-    if (forceReload) {
-      await JobSyncManager.syncJobDetailAll(
+    if (selectedJobStatus == JobStatus.SENDING) {
+      ConnectivityResult connectResult =
+          await Connectivity().checkConnectivity();
+      if (forceReload && connectResult != ConnectivityResult.none) {
+        try {
+          await JobSyncManager.syncJobDetailAll(
+              "",
+              DateFormat("yyyy-MM-dd")
+                  .format(DateTime.now().subtract(Duration(days: 30))),
+              DateFormat("yyyy-MM-dd")
+                  .format(DateTime.now().add(Duration(days: 30))),
+              "17");
+        } catch (e) {
+        }
+      }
+
+      jobs = await JobRepository.getJobDetailsByOrderStatus(
+          selectedJobStatus.toString());
+    } else if (selectedJobStatus == JobStatus.SENT ||
+        selectedJobStatus == JobStatus.REJECT_SENDING) {
+      jobs = await appController.api.fetchJobs(
           "",
           DateFormat("yyyy-MM-dd").format(appController.fromDate),
           DateFormat("yyyy-MM-dd").format(appController.toDate),
-          "17,18,19,20");
+          selectedJobStatus.toString());
     }
-    jobs = await JobRepository.getJobDetailsByOrderStatus(
-        selectedJobStatus.toString());
 
     selectedJobType = SendJobTypes.group_barcode;
     searchJobs("", selectedJobStatus);

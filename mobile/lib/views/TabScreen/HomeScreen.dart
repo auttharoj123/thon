@@ -67,7 +67,7 @@ class _HomeScreenState extends SLState<HomeScreen>
   late HomeController controller;
   late ScrollController _scrollController;
   late TextEditingController _searchTextController;
-  late DateRangePickerController _dateRangePickerController;
+  // late DateRangePickerController _dateRangePickerController;
   late MobileScannerController _mobileScannerController;
   late GlobalWidget _globalWidget;
   double topPointCard = 60;
@@ -80,7 +80,7 @@ class _HomeScreenState extends SLState<HomeScreen>
     theme = AppTheme.theme;
     customTheme = AppTheme.customTheme;
     controller = FxControllerStore.putOrFind(HomeController(), save: false);
-    _dateRangePickerController = DateRangePickerController();
+    // _dateRangePickerController = DateRangePickerController();
     _searchTextController = TextEditingController();
     _mobileScannerController =
         MobileScannerController(detectionSpeed: DetectionSpeed.unrestricted);
@@ -93,28 +93,28 @@ class _HomeScreenState extends SLState<HomeScreen>
     super.dispose();
   }
 
-  Widget _buildViewButton(dynamic job) {
-    if (controller.selectedJobs.length > 0) return Container();
+  // Widget _buildViewButton(dynamic job) {
+  //   if (controller.selectedJobs.length > 0) return Container();
 
-    return FxContainer.roundBordered(
-      color: Colors.blue,
-      onTap: () {
-        controller.goToJobDetailPage(job);
-      },
-      paddingAll: 10,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            FontAwesomeIcons.eye,
-            color: Colors.white,
-            size: 16,
-          ),
-          // FxSpacing.width(10),
-        ],
-      ),
-    );
-  }
+  //   return FxContainer.roundBordered(
+  //     color: Colors.blue,
+  //     onTap: () {
+  //       controller.goToJobDetailPage(job);
+  //     },
+  //     paddingAll: 10,
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.center,
+  //       children: [
+  //         Icon(
+  //           FontAwesomeIcons.eye,
+  //           color: Colors.white,
+  //           size: 16,
+  //         ),
+  //         // FxSpacing.width(10),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildRadioButton(dynamic job) {
     if (controller.selectedJobs.length > 0) {
@@ -197,7 +197,7 @@ class _HomeScreenState extends SLState<HomeScreen>
             child: Icon(
               Icons.call,
               color: Colors.white,
-              size: 20,
+              size: 15,
             ),
           )
         : Container();
@@ -801,44 +801,41 @@ class _HomeScreenState extends SLState<HomeScreen>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        FxText.titleLarge(
-                                          "${wrapper.title}",
-                                          fontWeight: 600,
-                                          color: Colors.blue,
+                                        Row(
+                                          children: [
+                                            FxText(
+                                              "${wrapper.title}",
+                                              fontWeight: 600,
+                                              color: Colors.blue,
+                                              fontSize: 18,
+                                            ),
+                                            FxSpacing.width(10),
+                                            _buildCall(wrapper.items[0])
+                                          ],
                                         ),
-                                        FxSpacing.width(20),
-                                        Expanded(
-                                          child: Stack(
-                                            children: [
-                                              (wrapper.items[0].directionType ==
-                                                      1)
-                                                  ? FxContainer.bordered(
-                                                      bordered: false,
-                                                      color:
-                                                          Colors.red.shade300,
-                                                      paddingAll: 5,
-                                                      child: FxText("จัดส่ง",
-                                                          fontSize:
-                                                              titleFontSize,
-                                                          color: Colors.white))
-                                                  : FxContainer.bordered(
-                                                      bordered: false,
-                                                      color:
-                                                          Colors.red.shade300,
-                                                      paddingAll: 5,
-                                                      child: FxText("รับคืน",
-                                                          fontSize:
-                                                              titleFontSize,
-                                                          color: Colors.white)),
-                                              Positioned(
-                                                  right: 0,
-                                                  child: _buildCall(
-                                                      wrapper.items[0])),
-                                            ],
-                                          ),
-                                        ),
-                                        // _buildCall(wrapper.items[0]),
+                                        // FxSpacing.width(20),
+                                        (wrapper.items[0].directionType ==
+                                                1)
+                                            ? FxContainer.bordered(
+                                                bordered: false,
+                                                color:
+                                                    Colors.red.shade300,
+                                                paddingAll: 5,
+                                                child: FxText("จัดส่ง",
+                                                    fontSize:
+                                                        titleFontSize,
+                                                    color: Colors.white))
+                                            : FxContainer.bordered(
+                                                bordered: false,
+                                                color:
+                                                    Colors.red.shade300,
+                                                paddingAll: 5,
+                                                child: FxText("รับคืน",
+                                                    fontSize:
+                                                        titleFontSize,
+                                                    color: Colors.white)),
                                       ],
                                     )
                                   ],
@@ -1023,37 +1020,36 @@ class _HomeScreenState extends SLState<HomeScreen>
                           onTap: () {
                             controller.goToJobDetailPage(job);
                           },
-                          child: FxText(
-                            "${job.barcode}",
-                            fontWeight: 600,
-                            fontSize: 20,
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                        FxSpacing.width(20),
-                        Expanded(
-                          child: Stack(
+                          child: Row(
                             children: [
-                              (job.directionType == 1)
-                                  ? FxContainer.bordered(
-                                      bordered: false,
-                                      color: Colors.red.shade300,
-                                      paddingAll: 5,
-                                      child: FxText("จัดส่ง",
-                                          fontSize: titleFontSize,
-                                          color: Colors.white))
-                                  : FxContainer.bordered(
-                                      bordered: false,
-                                      color: Colors.red.shade300,
-                                      paddingAll: 5,
-                                      child: FxText("รับคืน",
-                                          fontSize: titleFontSize,
-                                          color: Colors.white)),
-                              Positioned(right: 0, child: _buildCall(job)),
+                              FxText(
+                                "${job.barcode}",
+                                fontWeight: 600,
+                                fontSize: 18,
+                                color: Colors.blue,
+                                decoration: TextDecoration.underline,
+                              ),
+                              FxSpacing.width(10),
+                              _buildCall(job)
                             ],
                           ),
                         ),
+                        FxSpacing.width(20),
+                        (job.directionType == 1)
+                            ? FxContainer.bordered(
+                                bordered: false,
+                                color: Colors.red.shade300,
+                                paddingAll: 5,
+                                child: FxText("จัดส่ง",
+                                    fontSize: titleFontSize,
+                                    color: Colors.white))
+                            : FxContainer.bordered(
+                                bordered: false,
+                                color: Colors.red.shade300,
+                                paddingAll: 5,
+                                child: FxText("รับคืน",
+                                    fontSize: titleFontSize,
+                                    color: Colors.white)),
                       ],
                     ),
                   ),
@@ -1104,7 +1100,7 @@ class _HomeScreenState extends SLState<HomeScreen>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
+                            Expanded(
                               child: Row(
                                 children: [
                                   Icon(
@@ -1113,11 +1109,13 @@ class _HomeScreenState extends SLState<HomeScreen>
                                     size: 20,
                                   ),
                                   FxSpacing.width(10),
-                                  FxText(
-                                    "${job.routeName}",
-                                    fontWeight: 600,
-                                    fontSize: titleFontSize,
-                                    color: Colors.grey,
+                                  Flexible(
+                                    child: FxText(
+                                      "${job.routeName}",
+                                      fontWeight: 600,
+                                      fontSize: titleFontSize,
+                                      color: Colors.grey,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -2081,26 +2079,26 @@ class _HomeScreenState extends SLState<HomeScreen>
                               ],
                             ),
                           ),
-                          FxSpacing.height(15),
-                          Padding(
-                            padding: FxSpacing.horizontal(14),
-                            child: FxText.bodyLarge(
-                              'เลือกวันที่',
-                              fontWeight: 700,
-                            ),
-                          ),
-                          Padding(
-                            padding: FxSpacing.horizontal(14),
-                            child: SfDateRangePicker(
-                                controller: _dateRangePickerController,
-                                selectionMode:
-                                    DateRangePickerSelectionMode.range,
-                                initialSelectedRange: PickerDateRange(
-                                  appController.fromDate,
-                                  appController.toDate,
-                                )),
-                          ),
-                          FxSpacing.height(8),
+                          // FxSpacing.height(15),
+                          // Padding(
+                          //   padding: FxSpacing.horizontal(14),
+                          //   child: FxText.bodyLarge(
+                          //     'เลือกวันที่',
+                          //     fontWeight: 700,
+                          //   ),
+                          // ),
+                          // Padding(
+                          //   padding: FxSpacing.horizontal(14),
+                          //   child: SfDateRangePicker(
+                          //       controller: _dateRangePickerController,
+                          //       selectionMode:
+                          //           DateRangePickerSelectionMode.range,
+                          //       initialSelectedRange: PickerDateRange(
+                          //         appController.fromDate,
+                          //         appController.toDate,
+                          //       )),
+                          // ),
+                          // FxSpacing.height(8),
                           Padding(
                             padding: FxSpacing.horizontal(14),
                             child: FxText.bodyLarge(
@@ -2127,13 +2125,13 @@ class _HomeScreenState extends SLState<HomeScreen>
                             child: FxButton.block(
                               borderRadiusAll: 8,
                               onPressed: () {
-                                appController.onSelectedDateRange(
-                                    _dateRangePickerController
-                                        .selectedRange!.startDate!,
-                                    _dateRangePickerController
-                                            .selectedRange!.endDate ??
-                                        _dateRangePickerController
-                                            .selectedRange!.startDate!);
+                                // appController.onSelectedDateRange(
+                                //     _dateRangePickerController
+                                //         .selectedRange!.startDate!,
+                                //     _dateRangePickerController
+                                //             .selectedRange!.endDate ??
+                                //         _dateRangePickerController
+                                //             .selectedRange!.startDate!);
                                 controller.reloadAllJobs();
                                 Navigator.pop(context);
                               },

@@ -25,20 +25,12 @@ class UpdateJobTaskHandler extends TaskHandler {
 
   @override
   Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
-    // if (_eventCount == 3) {
-    //   _eventCount = 0;
-
-    //   return;
-    // }
     try {
       if (!_isUploading) {
         _isUploading = true;
         await JobSyncManager.syncNonUpdatedJob();
-
-        // Send data to the main isolate.
-        // sendPort?.send(_eventCount);
-
         _isUploading = false;
+
         await UpdateJobForegroundService.stopForegroundTask();
         // _eventCount++;
       }
@@ -55,8 +47,10 @@ class UpdateJobTaskHandler extends TaskHandler {
   }
 
   @override
-  void onButtonPressed(String id) {
-    // Called when the notification button on the Android platform is pressed.
+  void onButtonPressed(String id) async {
+    // if(id == "stopButton") {
+    //   await FlutterForegroundTask.stopService();
+    // }
     print('onButtonPressed >> $id');
   }
 

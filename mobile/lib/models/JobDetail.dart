@@ -26,7 +26,7 @@ class _JobDetail {
   @JsonKey(name: "barcode")
   late String barcode;
   @JsonKey(name: "jobnumber")
-  late String jobNumber;
+  late String jobNumber = "";
   @JsonKey(name: "customer_id")
   late int customerId;
   @JsonKey(name: "customer_name")
@@ -132,7 +132,6 @@ extension JobDetailJ on JobDetail {
       jobDetail.orderStatus,
       jobDetail.directionType,
       jobDetail.barcode,
-      jobDetail.jobNumber,
       jobDetail.customerId,
       jobDetail.customerName,
       jobDetail.statusFromServer,

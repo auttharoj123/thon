@@ -2,14 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:http/http.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:realm/realm.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as path;
-import 'package:slpod/constants/SLConsts.dart';
 import 'package:slpod/models/MstType.dart';
 import 'package:slpod/models/NonUpdatedJob.dart';
 
@@ -53,7 +51,7 @@ class MultipartRequest extends http.MultipartRequest {
 class API {
   // String baseUrl = "http://192.168.1.36:4000/api";
   late String domainName = "express.sltransport.co.th:4000";
-  // late String domainName = "192.168.1.36:4000";
+  // late String domainName = "192.168.1.35:4000";
   late String baseUrl;
   InterceptedClient client;
 
@@ -69,7 +67,12 @@ class API {
       var fcmToken = prefs.getString("fcmToken");
 
       final response = await client.post("$baseUrl/auth/login".toUri(),
-          body: jsonEncode({'login_name': username, 'password': password , 'device_id' : deviceId , 'fcm_token' : fcmToken}));
+          body: jsonEncode({
+            'login_name': username,
+            'password': password,
+            'device_id': deviceId,
+            'fcm_token': fcmToken
+          }));
       if (response.statusCode == 200) {
         parsedData =
             jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
@@ -80,7 +83,7 @@ class API {
         );
       }
     } on SocketException {
-      return Future.error('No Internet connection 😑');
+      return Future.error('ไม่สามารถเชื่อมต่อ Server ได้');
     } on FormatException {
       return Future.error('Bad response format 👎');
     } on Exception catch (error) {
@@ -105,7 +108,7 @@ class API {
         );
       }
     } on SocketException {
-      return Future.error('No Internet connection 😑');
+      return Future.error('ไม่สามารถเชื่อมต่อ Server ได้');
     } on FormatException {
       return Future.error('Bad response format 👎');
     } on Exception catch (error) {
@@ -134,7 +137,7 @@ class API {
         );
       }
     } on SocketException {
-      return Future.error('No Internet connection 😑');
+      return Future.error('ไม่สามารถเชื่อมต่อ Server ได้');
     } on FormatException {
       return Future.error('Bad response format 👎');
     } on Exception catch (error) {
@@ -154,50 +157,42 @@ class API {
   ) async {
     List<JobDetail> parsedData = [];
     try {
-      // var localData = RepositoryManager.getJobDetailsAll();
-      // if (forceReload || localData.length == 0) {
-      try {
-        final response = await client.get(
-            "$baseUrl/job/list?date_from=$dateFrom&date_to=$dateTo&status=$status"
-                .toUri());
-        if (response.statusCode == 200) {
-          var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes))
-              as Map<String, dynamic>;
-          parsedData =
-              (ResultResponse<JobDetail>().mapData(decodedResponse, (item) {
-            return JobDetailJ.fromJson(item);
-          }).result as List<JobDetail>);
-        } else {
-          return Future.error(
-            "Error while fetching.",
-            StackTrace.fromString("${response.body}"),
-          );
-        }
-      } on SocketException {
-        return Future.error('No Internet connection 😑');
-      } on FormatException {
-        return Future.error('Bad response format 👎');
-      } on Exception catch (error) {
-        print(error);
-        return Future.error('Unexpected error 😢');
+      final response = await client.get(
+          "$baseUrl/job/list?date_from=$dateFrom&date_to=$dateTo&status=$status"
+              .toUri());
+      if (response.statusCode == 200) {
+        var decodedResponse =
+            jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+        parsedData =
+            (ResultResponse<JobDetail>().mapData(decodedResponse, (item) {
+          return JobDetailJ.fromJson(item);
+        }).result as List<JobDetail>);
+      } else {
+        return Future.error(
+          "Error while fetching.",
+          StackTrace.fromString("${response.body}"),
+        );
       }
-
-      //   realm.write(() {
-      //     // realm.addAll(parsedData , update: true);
-      //     realm.addAll(parsedData, update: true);
-      //   });
-      //   //realm.close();
-
-      //   parsedData = realm.all<JobDetail>().toList();
-      // } else {
-      //   parsedData = localData.toList();
-      //   await Future.delayed(Duration(milliseconds: 100));
-      // }
-    } catch (e) {
-      var test = "";
-    } finally {
-      //realm.close();
+    } on SocketException {
+      return Future.error('ไม่สามารถเชื่อมต่อ Server ได้');
+    } on FormatException {
+      return Future.error('Bad response format 👎');
+    } on Exception catch (error) {
+      print(error);
+      return Future.error('Unexpected error 😢');
     }
+
+    //   realm.write(() {
+    //     // realm.addAll(parsedData , update: true);
+    //     realm.addAll(parsedData, update: true);
+    //   });
+    //   //realm.close();
+
+    //   parsedData = realm.all<JobDetail>().toList();
+    // } else {
+    //   parsedData = localData.toList();
+    //   await Future.delayed(Duration(milliseconds: 100));
+    // }
 
     return parsedData;
   }
@@ -221,7 +216,7 @@ class API {
           );
         }
       } on SocketException {
-        return Future.error('No Internet connection 😑');
+        return Future.error('ไม่สามารถเชื่อมต่อ Server ได้');
       } on FormatException {
         return Future.error('Bad response format 👎');
       } on Exception catch (error) {
@@ -253,6 +248,7 @@ class API {
       );
       request.headers.addAll(headers);
       request.fields['jobIds'] = nonUpdatedJobs.jobIds;
+      request.fields['barcodes'] = nonUpdatedJobs.barcodes;
       request.fields['remarkCatId'] =
           nonUpdatedJobs.targetRemarkCategoryId.toString();
       request.fields['complacency'] =
@@ -322,7 +318,7 @@ class API {
           );
         }
       } on SocketException {
-        return Future.error('No Internet connection 😑');
+        return Future.error('ไม่สามารถเชื่อมต่อ Server ได้');
       } on FormatException {
         return Future.error('Bad response format 👎');
       } on Exception catch (error) {
