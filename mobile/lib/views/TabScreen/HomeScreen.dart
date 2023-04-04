@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:lottie/lottie.dart';
@@ -16,8 +18,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:slpod/utils/navigation_helper.dart';
 import 'package:slpod/views/Reuseable/GlobalWidget.dart';
 import 'package:slpod/views/SLState.dart';
-import 'package:slpod/views/SplashScreenPage.dart';
-import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
@@ -306,7 +306,7 @@ class _HomeScreenState extends SLState<HomeScreen>
                   controller: _textController,
                   autocorrect: false,
                   enableSuggestions: false,
-                  keyboardType: TextInputType.number,
+                  keyboardType: TextInputType.text,
                   decoration: InputDecoration(
                     floatingLabelBehavior: FloatingLabelBehavior.never,
                     errorStyle: TextStyle(fontFamily: 'Kanit', fontSize: 14),
@@ -801,7 +801,8 @@ class _HomeScreenState extends SLState<HomeScreen>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Row(
                                           children: [
@@ -816,25 +817,20 @@ class _HomeScreenState extends SLState<HomeScreen>
                                           ],
                                         ),
                                         // FxSpacing.width(20),
-                                        (wrapper.items[0].directionType ==
-                                                1)
+                                        (wrapper.items[0].directionType == 1)
                                             ? FxContainer.bordered(
                                                 bordered: false,
-                                                color:
-                                                    Colors.red.shade300,
+                                                color: Colors.red.shade300,
                                                 paddingAll: 5,
                                                 child: FxText("จัดส่ง",
-                                                    fontSize:
-                                                        titleFontSize,
+                                                    fontSize: titleFontSize,
                                                     color: Colors.white))
                                             : FxContainer.bordered(
                                                 bordered: false,
-                                                color:
-                                                    Colors.red.shade300,
+                                                color: Colors.red.shade300,
                                                 paddingAll: 5,
                                                 child: FxText("รับคืน",
-                                                    fontSize:
-                                                        titleFontSize,
+                                                    fontSize: titleFontSize,
                                                     color: Colors.white)),
                                       ],
                                     )
@@ -1790,27 +1786,32 @@ class _HomeScreenState extends SLState<HomeScreen>
                           marginAll: 0,
                           bordered: false,
                           color: Colors.grey.shade200,
-                          child: Lottie.asset('assets/animations/lottie/keyboard.json')),
+                          child: Lottie.asset(
+                              'assets/animations/lottie/keyboard.json')),
                       FxSpacing.height(10),
                       FxContainer.roundBordered(
                           onTap: () async {
-                            var value =
-                                await FlutterBarcodeScanner.scanBarcode(
-                                    "#ff6666",
-                                    "Cancel",
-                                    true,
-                                    ScanMode.BARCODE);
-
-                            if (value != "-1") {
+                            // var value = await FlutterBarcodeScanner.scanBarcode(
+                            //     "#ff6666", "Cancel", true, ScanMode.BARCODE);
+                            var value = await BarcodeScanner.scan();
+                            if (value.rawContent != "-1") {
                               if (controller.selectionJobType ==
                                   SelectionJobType.receive_job) {
                                 var response = await controller
                                     .appController.api
-                                    .updateJobStatusByBarCode(value);
+                                    .updateJobStatusByBarCode(value.rawContent);
                                 if (response != null) {
                                   if (response["isSuccess"]) {
-                                    controller.reloadAllJobs(
-                                        forceReload: true);
+                                    AssetsAudioPlayer.playAndForget(
+                                        Audio('assets/audio/bell.wav'));
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return _globalWidget.successDialog(
+                                              context,
+                                              "สแกนบาร์โค้ด ${value.rawContent} สำเร็จ");
+                                        });
+                                    controller.reloadAllJobs(forceReload: true);
                                   } else {
                                     showDialog(
                                         context: context,
@@ -1822,13 +1823,12 @@ class _HomeScreenState extends SLState<HomeScreen>
                                 }
                               } else {
                                 var errorMessage = await controller
-                                    .searchJobsForSend(value);
+                                    .searchJobsForSend(value.rawContent);
                                 if (errorMessage.isNotEmpty) {
                                   showDialog(
                                       context: context,
-                                      builder: (context) =>
-                                          _globalWidget.errorDialog(
-                                              context, errorMessage));
+                                      builder: (context) => _globalWidget
+                                          .errorDialog(context, errorMessage));
                                 }
                               }
                             } else {
@@ -1837,14 +1837,15 @@ class _HomeScreenState extends SLState<HomeScreen>
                                   builder: (context) {
                                     return _globalWidget.errorDialog(
                                         context, "สแกนบาร์โค้ดไม่สำเร็จ ",
-                                        title2: '$value');
+                                        title2: '${value.rawContent}');
                                   });
                             }
                           },
                           paddingAll: 10,
                           bordered: false,
                           color: Colors.grey.shade200,
-                          child: Lottie.asset('assets/animations/lottie/barcode-scanner.json'))
+                          child: Lottie.asset(
+                              'assets/animations/lottie/barcode-scanner.json'))
                     ],
                   ),
                 ),
