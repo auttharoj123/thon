@@ -148,20 +148,6 @@ class SendJobController extends BaseController {
             duration: Duration(milliseconds: 300), curve: Curves.ease);
         update();
       }
-      // else if (args["jobType"] == SendJobType.REMARK) {
-      //   if (remarkCatIdDump.isEmpty) {
-      //     showDialog(
-      //         context: context,
-      //         builder: (context) => globalWidget.errorDialog(
-      //             context, "กรุณาเลือกหมายเหตุการส่งงาน"));
-      //     return;
-      //   }
-
-      //   currentPageState++;
-      //   pageController.animateToPage(currentPageState,
-      //       duration: Duration(milliseconds: 300), curve: Curves.ease);
-      //   update();
-      // }
     } else if (currentPageState == 1) {
       final prefs = await SharedPreferences.getInstance();
       var isSendJobRemark = args["jobType"] == SendJobType.REMARK;

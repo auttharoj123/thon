@@ -2,10 +2,16 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:slpod/utils/navigation_helper.dart';
+import 'package:slpod/views/LoginScreenPage.dart';
+import 'package:slpod/views/Reuseable/GlobalWidget.dart';
 
 class RequestInterceptor implements InterceptorContract {
+  var globalWidget = GlobalWidget();
+
   @override
   Future<RequestData> interceptRequest({required RequestData data}) async {
     try {
@@ -29,6 +35,18 @@ class RequestInterceptor implements InterceptorContract {
   }
 
   @override
-  Future<ResponseData> interceptResponse({required ResponseData data}) async =>
-      data;
+  Future<ResponseData> interceptResponse({required ResponseData data}) async {
+    if (data.statusCode == 401) {
+      showDialog(
+          context: NavigationService.navigatorKey.currentContext!,
+          builder: (context) => globalWidget
+                  .errorDialog(context, "Token Expired. Please Login again.",
+                      acceptPressed: () {
+                Navigator.of(
+                        NavigationService.navigatorKey.currentState!.context)
+                    .pushReplacementNamed("/login");
+              }));
+    }
+    return data;
+  }
 }

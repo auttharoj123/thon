@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class SLAppl {
-  static const String VERSION = "1.0.1";
+  static const String VERSION = "3.0.2";
 }
 
 class SLColor {

@@ -352,7 +352,8 @@ class GlobalWidget {
     );
   }
 
-  Widget errorDialog(context, title, {title2 = ""}) {
+  Widget errorDialog(context, title,
+      {title2 = "", void Function()? acceptPressed}) {
     return Dialog(
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(8.0))),
@@ -401,6 +402,7 @@ class GlobalWidget {
                         elevation: 0,
                         onPressed: () {
                           Navigator.of(context).pop();
+                          acceptPressed?.call();
                         },
                         child: FxText.bodyMedium("ตกลง",
                             letterSpacing: 0.4, color: Colors.white)),

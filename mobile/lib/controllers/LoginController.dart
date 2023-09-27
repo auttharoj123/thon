@@ -1,22 +1,10 @@
-import 'dart:convert';
-
 import 'package:slpod/controllers/BaseController.dart';
-import 'package:slpod/models/ResultResponse.dart';
-import 'package:slpod/views/Admin/AdminTabMainScreenPage.dart';
-import 'package:slpod/views/Driver/TabMainScreenPage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_des/flutter_des.dart';
 import 'package:flutx/flutx.dart';
 import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:slpod/views/Reuseable/GlobalWidget.dart';
 import 'package:slpod/views/SplashScreenPage.dart';
-import 'package:workmanager/workmanager.dart';
-
-// import '../shopping_cache.dart';
-// import '../views/forgot_password_screen.dart';
-// import '../views/full_app.dart';
-// import '../views/register_screen.dart';
 
 class LoginController extends BaseController {
   GlobalKey<FormState> formKey = GlobalKey();
@@ -24,6 +12,7 @@ class LoginController extends BaseController {
   TextEditingController passwordController = TextEditingController();
   bool enable = false;
   Map<String, String> headers = {};
+  var globalWidget = GlobalWidget();
 
   @override
   void initState() {
@@ -55,10 +44,7 @@ class LoginController extends BaseController {
   String? validatePassword(String? text) {
     if (text == null || text.isEmpty) {
       return "Please enter password";
-    } 
-    // else if (!FxStringValidator.validateStringRange(text, 6, 10)) {
-    //   return "Password must be between 6 to 10";
-    // }
+    }
     return null;
   }
 
@@ -67,36 +53,11 @@ class LoginController extends BaseController {
     update();
   }
 
-  void goToRegisterScreen() {
-    // Navigator.of(context, rootNavigator: true).pushReplacement(
-    //   MaterialPageRoute(
-    //     builder: (context) => RegisterScreen(),
-    //   ),
-    // );
-  }
+  void goToRegisterScreen() {}
 
-  void goToForgotPasswordScreen() {
-    // Navigator.of(context, rootNavigator: true).pushReplacement(
-    //   MaterialPageRoute(
-    //     builder: (context) => ForgotPasswordScreen(),
-    //   ),
-    // );
-  }
+  void goToForgotPasswordScreen() {}
 
   void login() async {
-    // final ImagePicker _picker = ImagePicker();
-    // final List<XFile>? images = await _picker.pickMultiImage();
-    // final paths = images!.map((e) => e.path);
-    // Workmanager().registerOneOffTask(
-    //   "update-job-1",
-    //   "update-job-Task",
-    //   inputData: {
-    //     "images" : paths.join(',')
-    //   }
-    // );
-
-    // //print("Test");
-    // return;
     if (formKey.currentState!.validate()) {
       final prefs = await SharedPreferences.getInstance();
       var client = http.Client();
@@ -121,15 +82,11 @@ class LoginController extends BaseController {
             transitionDuration: Duration.zero,
           ),
         );
-
-        // var userInfoResponse = await appController.api.fetchUserInfo();
-        // if (userInfoResponse["isSuccess"]) {
-        //   await prefs.setBool(
-        //       'roleAdmin', userInfoResponse["result"]["roleAdmin"]);
-
-        // }
       } catch (e) {
-        print(e);
+        showDialog(
+            context: context,
+            builder: (context) => globalWidget.errorDialog(
+                context, "Username หรือ Password ไม่ถูกต้อง"));
       } finally {
         client.close();
       }

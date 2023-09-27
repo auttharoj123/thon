@@ -1791,15 +1791,15 @@ class _HomeScreenState extends SLState<HomeScreen>
                       FxSpacing.height(10),
                       FxContainer.roundBordered(
                           onTap: () async {
-                            // var value = await FlutterBarcodeScanner.scanBarcode(
-                            //     "#ff6666", "Cancel", true, ScanMode.BARCODE);
-                            var value = await BarcodeScanner.scan();
-                            if (value.rawContent != "-1") {
+                            var value = await FlutterBarcodeScanner.scanBarcode(
+                                "#ff6666", "Cancel", true, ScanMode.BARCODE);
+                            // var value = await BarcodeScanner.scan();
+                            if (value != "-1") {
                               if (controller.selectionJobType ==
                                   SelectionJobType.receive_job) {
                                 var response = await controller
                                     .appController.api
-                                    .updateJobStatusByBarCode(value.rawContent);
+                                    .updateJobStatusByBarCode(value);
                                 if (response != null) {
                                   if (response["isSuccess"]) {
                                     AssetsAudioPlayer.playAndForget(
@@ -1809,7 +1809,7 @@ class _HomeScreenState extends SLState<HomeScreen>
                                         builder: (context) {
                                           return _globalWidget.successDialog(
                                               context,
-                                              "สแกนบาร์โค้ด ${value.rawContent} สำเร็จ");
+                                              "สแกนบาร์โค้ด $value สำเร็จ");
                                         });
                                     controller.reloadAllJobs(forceReload: true);
                                   } else {
@@ -1822,8 +1822,8 @@ class _HomeScreenState extends SLState<HomeScreen>
                                   }
                                 }
                               } else {
-                                var errorMessage = await controller
-                                    .searchJobsForSend(value.rawContent);
+                                var errorMessage =
+                                    await controller.searchJobsForSend(value);
                                 if (errorMessage.isNotEmpty) {
                                   showDialog(
                                       context: context,
@@ -1837,7 +1837,7 @@ class _HomeScreenState extends SLState<HomeScreen>
                                   builder: (context) {
                                     return _globalWidget.errorDialog(
                                         context, "สแกนบาร์โค้ดไม่สำเร็จ ",
-                                        title2: '${value.rawContent}');
+                                        title2: '$value');
                                   });
                             }
                           },

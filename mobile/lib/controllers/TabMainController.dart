@@ -1,12 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_feather_icons/flutter_feather_icons.dart';
-import 'package:flutx/flutx.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:slpod/controllers/AppController.dart';
 import 'package:slpod/controllers/BaseController.dart';
-import 'package:slpod/views/TabScreen/ProfileScreen.dart';
 
 // import '../views/dashboard_screen.dart';
 // import '../views/orders_screen.dart';

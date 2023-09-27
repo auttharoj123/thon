@@ -5,3 +5,4 @@ mobile/android/caches/
 mobile/android/.tmp/
 mobile/android/daemon/
 mobile/android/kotlin-profile/
+mobile/android/app/release/
