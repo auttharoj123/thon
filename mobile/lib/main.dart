@@ -31,7 +31,7 @@ import 'package:slpod/views/JobDetailScreenPage.dart';
 import 'package:slpod/views/LoginScreenPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+// import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:slpod/views/RootScreenPage.dart';
 import 'package:slpod/views/SendJobScreenPage.dart';
@@ -257,9 +257,9 @@ class _SLAppState extends State<SLApp> {
                 localizationsDelegates: [
                   AppLocalizationsDelegate(context),
                   // Add this line
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
+                  // GlobalMaterialLocalizations.delegate,
+                  // GlobalWidgetsLocalizations.delegate,
+                  // GlobalCupertinoLocalizations.delegate,
                 ],
                 routes: {
                   '/': (context) => RootScreenPage(),
