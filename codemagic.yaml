@@ -5,12 +5,12 @@ workflows:
     scripts:
       - name: Install dependencies
         script: |
-          cd slpodmobile/Flutter  # ไปที่โฟลเดอร์ Flutter ภายใน slpodmobile
+          cd slpodmobile/flutx  # ไปที่โฟลเดอร์ Flutter ภายใน slpodmobile
           flutter doctor
           flutter pub get
       - name: Build iOS
         script: |
-          cd slpodmobile/Flutter  # ไปที่โฟลเดอร์ Flutter อีกครั้ง
+          cd slpodmobile/flutx  # ไปที่โฟลเดอร์ Flutter อีกครั้ง
           flutter build ios --release
     artifacts:
       - build/ios/ipa/*.ipa
