@@ -2,18 +2,17 @@ workflows:
   ios:
     name: Build iOS App
     max_build_duration: 60
-    instances:
-      - macos-latest
     scripts:
       - name: Install dependencies
         script: |
-          cd slpodmobile # เปลี่ยนไดเรกทอรีไปยังโฟลเดอร์โปรเจกต์ Flutter ของคุณ
+          cd mobile # เปลี่ยนไดเรกทอรีไปยังโฟลเดอร์โปรเจกต์ Flutter ของคุณ
           flutter doctor
           flutter pub get
       - name: Build iOS
         script: |
-          cd slpodmobile # ไปที่โฟลเดอร์โปรเจกต์
+          cd mobile # ไปที่โฟลเดอร์โปรเจกต์
           flutter build ios --release
     artifacts:
       - build/ios/ipa/*.ipa
+
 
