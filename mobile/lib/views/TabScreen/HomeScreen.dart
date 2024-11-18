@@ -1456,7 +1456,7 @@ class _HomeScreenState extends SLState<HomeScreen>
                     topLeft: Radius.circular(40),
                     topRight: Radius.circular(40)),
               ),
-              margin: FxSpacing.only(top: topPointCard, left: 10, right: 10),
+              margin: FxSpacing.only(top: FxSpacing.safeAreaTop(context) + topPointCard, left: 10, right: 10),
               child: Stack(
                 children: [
                   FxContainer.bordered(
@@ -1495,6 +1495,7 @@ class _HomeScreenState extends SLState<HomeScreen>
               )),
         ),
         Container(
+          margin: EdgeInsets.only(top: FxSpacing.safeAreaTop(context)),
           // height: 160,
           child: Column(
             children: [
@@ -2302,36 +2303,34 @@ class _HomeScreenState extends SLState<HomeScreen>
     return FxBuilder<HomeController>(
       controller: controller,
       builder: (controller) {
-        return SafeArea(
-          child: WillPopScope(
-            onWillPop: () async {
-              if (controller.isSearchMode) {
-                _searchTextController.clear();
-                FocusScope.of(context).unfocus();
-                controller.reloadAllJobs();
-              }
-              return false;
-            },
-            child: Scaffold(
-              body: Column(
-                children: [
-                  Container(
-                    height: 2,
-                    child: controller.showLoading
-                        ? LinearProgressIndicator(
-                            color: customTheme.estatePrimary,
-                            minHeight: 2,
-                          )
-                        : Container(
-                            height: 2,
-                            color: Colors.blue,
-                          ),
-                  ),
-                  Expanded(
-                    child: _buildBody(),
-                  ),
-                ],
-              ),
+        return WillPopScope(
+          onWillPop: () async {
+            if (controller.isSearchMode) {
+              _searchTextController.clear();
+              FocusScope.of(context).unfocus();
+              controller.reloadAllJobs();
+            }
+            return false;
+          },
+          child: Scaffold(
+            body: Column(
+              children: [
+                Container(
+                  height: 2,
+                  child: controller.showLoading
+                      ? LinearProgressIndicator(
+                          color: customTheme.estatePrimary,
+                          minHeight: 2,
+                        )
+                      : Container(
+                          height: 2,
+                          color: Colors.blue,
+                        ),
+                ),
+                Expanded(
+                  child: _buildBody(),
+                ),
+              ],
             ),
           ),
         );

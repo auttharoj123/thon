@@ -92,7 +92,7 @@ class _AdvancedScreenState extends State<AdvancedScreen> {
     return [
       SimpleStepperScreen(),
       TimelineStepperScreen(),
-      GoogleMapScreen(),
+      // GoogleMapScreen(),
       AnimatedSwitcherScreen(),
       HistorySearchScreen(),
     ];

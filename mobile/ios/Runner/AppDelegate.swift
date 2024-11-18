@@ -1,6 +1,7 @@
 import UIKit
 import Flutter
-import GoogleMaps
+import workmanager
+// import GoogleMaps
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
@@ -9,8 +10,10 @@ import GoogleMaps
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
+    WorkmanagerPlugin.registerBGProcessingTask(withIdentifier: "task-identifier")
+    WorkmanagerPlugin.registerPeriodicTask(withIdentifier: "be.tramckrijte.workmanagerExample.iOSBackgroundAppRefresh", frequency: NSNumber(value: 20 * 60))
     //TODO: Add google map API key here
-    GMSServices.provideAPIKey("")
+    // GMSServices.provideAPIKey("")
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
