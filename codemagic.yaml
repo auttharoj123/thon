@@ -5,15 +5,15 @@ workflows:
     scripts:
       - name: Install dependencies
         script: |
-          cd slpodmobile # ไปที่โฟลเดอร์โปรเจกต์ Flutter
-          flutter doctor  # ตรวจสอบการตั้งค่าของ Flutter
-          flutter pub get  # ดึง dependencies ที่จำเป็น
+          cd slpodmobile/Flutter  # ไปที่โฟลเดอร์ Flutter ภายใน slpodmobile
+          flutter doctor
+          flutter pub get
       - name: Build iOS
         script: |
-          cd slpodmobile # ไปที่โฟลเดอร์โปรเจกต์
-          flutter build ios --release # สร้างแอป iOS ในโหมด Release
+          cd slpodmobile/Flutter  # ไปที่โฟลเดอร์ Flutter อีกครั้ง
+          flutter build ios --release
     artifacts:
-      - build/ios/ipa/*.ipa # กำหนดให้บันทึกไฟล์ .ipa ที่สร้างขึ้น
+      - build/ios/ipa/*.ipa
 
 
 
